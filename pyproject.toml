@@ -10,6 +10,9 @@ python = "^3.11"
 Django = "^5.0.3"
 djangorestframework = "^3.15.1"
 djangorestframework-simplejwt = "^5.3.1"
+channels = "^4.0.0"
+daphne = "^4.1.0"
+channels-redis = "^4.2.0"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.1.1"
