@@ -50,10 +50,14 @@ class UserRegisterSerializer(serializers.ModelSerializer):
         return attrs
 
     def create(self, validated_data):
+        username = validated_data['username'].lower()
+        first_name = validated_data['first_name'].title()
+        last_name = validated_data['last_name'].title()
+
         user = User.objects.create_user(
-            username=validated_data['username'],
-            first_name=validated_data['first_name'],
-            last_name=validated_data['last_name'],
+            username=username,
+            first_name=first_name,
+            last_name=last_name,
             password=validated_data['password'],
         )
 
