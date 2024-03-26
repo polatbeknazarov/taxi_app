@@ -7,7 +7,7 @@ SECRET_KEY = 'django-insecure-1x=u6bof@qzwfg-*)ve@v2$qm)z2-^bxcuzhzl#9)_=*p*sx_2
 
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 
 INSTALLED_APPS = [
@@ -23,6 +23,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
 
     'users',
+    'line',
 ]
 
 MIDDLEWARE = [
