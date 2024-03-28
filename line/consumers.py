@@ -5,6 +5,7 @@ from channels.generic.websocket import AsyncWebsocketConsumer
 
 from line.models import Line
 from line.serializers import LineSerializer
+from orders.models import Order
 
 
 class LineConsumer(AsyncWebsocketConsumer):
@@ -27,9 +28,9 @@ class LineConsumer(AsyncWebsocketConsumer):
             await self.channel_layer.group_discard(
                 self.username, self.channel_name
             )
-            await sync_to_async(Line.objects.filter(driver=self.user).update(status=False))
-        except:
-            pass
+            await sync_to_async(Line.objects.filter(driver=self.user).update)(status=False)
+        except Exception as e:
+            print(e)
 
     async def receive(self, event):
         pass
@@ -56,3 +57,6 @@ class LineConsumer(AsyncWebsocketConsumer):
     async def send_message(self, event):
         message = event['message']
         await self.send(message)
+
+    async def order_created(self, order):
+        await self.send_message({'message': json.dumps(order['message'])})
