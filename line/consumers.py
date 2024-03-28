@@ -57,6 +57,3 @@ class LineConsumer(AsyncWebsocketConsumer):
     async def send_message(self, event):
         message = event['message']
         await self.send(message)
-
-    async def order_created(self, order):
-        await self.send_message({'message': json.dumps(order['message'])})
