@@ -4,14 +4,13 @@ from orders.models import Order
 
 
 class OrderSerizlizer(serializers.ModelSerializer):
-    in_search = serializers.BooleanField(read_only=True)
-
     class Meta:
         model = Order
         fields = (
             'id',
+            'from_city',
+            'to_city',
             'address',
-            'in_search',
-            'driver',
+            'phone_number',
             'created_at',
         )
