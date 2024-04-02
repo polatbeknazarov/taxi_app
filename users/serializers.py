@@ -1,64 +1,44 @@
+from django.contrib.auth import get_user_model
+from django.contrib.auth.password_validation import validate_password
 from rest_framework import serializers
-from django.contrib.auth.models import User
+from rest_framework.exceptions import ValidationError
+from djoser.serializers import UserCreateSerializer as DjoserUserCreateSerializer
+
+CustomUser = get_user_model()
 
 
-class UserSerializer(serializers.ModelSerializer):
-    full_name = serializers.SerializerMethodField()
-
-    class Meta:
-        model = User
-        fields = ('id', 'username', 'full_name',)
-
-    def get_full_name(self, obj):
-        return obj.get_full_name()
-
-
-class UserLoginSerializer(serializers.Serializer):
-    username = serializers.CharField(max_length=150)
-    password = serializers.CharField(max_length=128, write_only=True)
-
-
-class UserRegisterSerializer(serializers.ModelSerializer):
-    first_name = serializers.CharField(required=True)
-    last_name = serializers.CharField(required=True)
-    password = serializers.CharField(write_only=True)
+class CustomUserSerializer(DjoserUserCreateSerializer):
     password2 = serializers.CharField(write_only=True)
 
-    class Meta:
-        model = User
+    class Meta(DjoserUserCreateSerializer.Meta):
+        model = CustomUser
         fields = (
+            'id',
             'username',
             'first_name',
             'last_name',
+            'phone_number',
             'password',
             'password2',
         )
 
     def validate(self, attrs):
-        password = attrs.get('password')
-        password2 = attrs.get('password2')
+        if attrs['password'] != attrs.pop('password2'):
+            raise serializers.ValidationError("Passwords do not match")
 
-        if password != password2:
-            raise serializers.ValidationError(
-                {'detail': 'Passwords do not match.'},
-            )
-        if len(password) < 8:
-            raise serializers.ValidationError(
-                {'detail': 'Password should be at least 8 characters long.'},
-            )
+        validate_password(attrs['password'], user=CustomUser)
 
         return attrs
 
-    def create(self, validated_data):
-        username = validated_data['username'].lower()
-        first_name = validated_data['first_name'].title()
-        last_name = validated_data['last_name'].title()
+    def validate_password(self, value):
+        errors = dict()
 
-        user = User.objects.create_user(
-            username=username,
-            first_name=first_name,
-            last_name=last_name,
-            password=validated_data['password'],
-        )
+        try:
+            validate_password(value, user=self.instance)
+        except ValidationError as e:
+            errors['password'] = list(e.messages)
 
-        return user
+        if errors:
+            raise serializers.ValidationError(errors)
+
+        return value
