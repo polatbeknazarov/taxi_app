@@ -28,12 +28,12 @@ class LineConsumer(AsyncWebsocketConsumer):
             await self.channel_layer.group_discard(
                 self.username, self.channel_name
             )
-            await sync_to_async(Line.objects.filter(driver=self.user).update)(status=False)
+            await sync_to_async(Line.objects.filter(driver=self.username).update)(status=False)
         except Exception as e:
             print(e)
 
-    async def receive(self, event):
-        pass
+    async def receive(self, text_data):
+        print(text_data)
 
     async def _send_line_to_driver(self):
         await sync_to_async(Line.objects.create)(driver=self.user)
