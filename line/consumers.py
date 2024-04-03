@@ -5,7 +5,6 @@ from channels.generic.websocket import AsyncWebsocketConsumer
 
 from line.models import Line
 from line.serializers import LineSerializer
-from orders.models import Order
 
 
 class LineConsumer(AsyncWebsocketConsumer):
@@ -25,18 +24,23 @@ class LineConsumer(AsyncWebsocketConsumer):
 
     async def disconnect(self, code):
         try:
+            driver = await sync_to_async(Line.objects.filter)(driver=self.user)
+            await sync_to_async(driver.update)(status=False)
             await self.channel_layer.group_discard(
                 self.username, self.channel_name
             )
-            await sync_to_async(Line.objects.filter(driver=self.username).update)(status=False)
         except Exception as e:
             print(e)
 
     async def receive(self, text_data):
-        print(text_data)
+        pass
 
     async def _send_line_to_driver(self):
-        await sync_to_async(Line.objects.create)(driver=self.user)
+        obj, created = await sync_to_async(Line.objects.get_or_create)(driver=self.user)
+
+        if obj:
+            obj.status = True
+            await sync_to_async(obj.save)()
 
         line = await sync_to_async(Line.objects.filter)(status=True)
         data = await sync_to_async(self._serialize_line)(line)
