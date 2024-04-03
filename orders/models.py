@@ -23,6 +23,7 @@ class Order(models.Model):
     address = models.TextField(blank=False)
     phone_number = models.CharField(
         max_length=18, validators=[phone_regex,], blank=False)
+    balance = models.DecimalField(max_digits=7, decimal_places=2, default=0)
     in_search = models.BooleanField(default=True)
     driver = models.ForeignKey(User, on_delete=models.CASCADE, null=True)
     created_at = models.DateTimeField(auto_now=True)
@@ -33,6 +34,5 @@ class Order(models.Model):
 
 @receiver(post_save, sender=Order)
 def order_post_save(sender, instance, created, **kwargs):
-    if created:
-        from orders.tasks import send_order
-        send_order.delay(instance.id)
+    from orders.tasks import send_order
+    send_order.delay(instance.id)

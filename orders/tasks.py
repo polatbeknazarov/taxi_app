@@ -31,5 +31,5 @@ def send_order(order_id):
             }
         )
 
-        time.sleep(50)
+        time.sleep(100)
         order.refresh_from_db()

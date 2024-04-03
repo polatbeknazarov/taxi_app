@@ -5,6 +5,7 @@ from channels.generic.websocket import AsyncWebsocketConsumer
 
 from line.models import Line
 from line.serializers import LineSerializer
+from orders.models import Order
 
 
 class LineConsumer(AsyncWebsocketConsumer):
@@ -15,11 +16,13 @@ class LineConsumer(AsyncWebsocketConsumer):
 
         self.user = self.scope['user']
         self.username = self.user.username
+        self.from_city = None
+        self.to_city = None
 
         await self.channel_layer.group_add(
             self.username, self.channel_name
         )
-        await self._send_line_to_driver()
+
         await self.accept()
 
     async def disconnect(self, code):
@@ -33,7 +36,30 @@ class LineConsumer(AsyncWebsocketConsumer):
             print(e)
 
     async def receive(self, text_data):
-        pass
+        data = json.loads(text_data)
+
+        if data['type'] == 'accept':
+            order_id = data['order_id']
+
+            order = await sync_to_async(Order.objects.get)(id=order_id)
+            order.driver = self.user
+            order.in_search = False
+            order.balance += 1000
+            await sync_to_async(order.save)()
+
+            await self.channel_layer.group_send(
+                self.username,
+                {
+                    'type': 'send_message',
+                    'message': 'True',
+                },
+            )
+
+        if data['type'] == 'join_line':
+            self.from_city = data['from_city']
+            self.to_city = data['to_city']
+
+            await self._send_line_to_driver()
 
     async def _send_line_to_driver(self):
         obj, created = await sync_to_async(Line.objects.get_or_create)(driver=self.user)
