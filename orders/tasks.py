@@ -7,15 +7,15 @@ from asgiref.sync import async_to_sync
 from channels.layers import get_channel_layer
 
 from orders.models import Order
-from orders.serializers import OrderSerizlizer
+from orders.serializers import OrderSerializer
 from line.models import Line
 
 
 @app.task
-def send_order(order_id):
-    lines = Line.objects.filter(status=True)
+def send_order(order_id, from_city, to_city):
+    lines = Line.objects.filter(status=True, from_city=from_city, to_city=to_city)
     order = Order.objects.get(id=order_id)
-    data = OrderSerizlizer(order).data
+    data = OrderSerializer(order).data
 
     channel_layer = get_channel_layer()
 

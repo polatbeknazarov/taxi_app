@@ -1,11 +1,12 @@
 import json
 
+from django.shortcuts import get_object_or_404
 from asgiref.sync import sync_to_async
 from channels.generic.websocket import AsyncWebsocketConsumer
 
 from line.models import Line
 from line.serializers import LineSerializer
-from orders.models import Order
+from orders.models import Order, OrdersHistory
 
 
 class LineConsumer(AsyncWebsocketConsumer):
@@ -45,6 +46,8 @@ class LineConsumer(AsyncWebsocketConsumer):
             order.driver = self.user
             order.in_search = False
             order.balance += 1000
+
+            await sync_to_async(OrdersHistory.objects.create)(driver=self.user, client=order)
             await sync_to_async(order.save)()
 
             await self.channel_layer.group_send(
@@ -62,13 +65,17 @@ class LineConsumer(AsyncWebsocketConsumer):
             await self._send_line_to_driver()
 
     async def _send_line_to_driver(self):
-        obj, created = await sync_to_async(Line.objects.get_or_create)(driver=self.user)
-
-        if obj:
+        try:
+            obj = await sync_to_async(Line.objects.get)(driver=self.user, from_city=self.from_city, to_city=self.to_city)
             obj.status = True
-            await sync_to_async(obj.save)()
+            obj.from_city = self.from_city
+            obj.to_city = self.to_city
 
-        line = await sync_to_async(Line.objects.filter)(status=True)
+            await sync_to_async(obj.save)()
+        except:
+            await sync_to_async(Line.objects.create)(driver=self.user, from_city=self.from_city, to_city=self.to_city)
+
+        line = await sync_to_async(Line.objects.filter)(status=True, from_city=self.from_city, to_city=self.to_city)
         data = await sync_to_async(self._serialize_line)(line)
 
         for driver in line:

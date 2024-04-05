@@ -1,11 +1,9 @@
 from django.db import models
-from django.contrib.auth import get_user_model
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.core.validators import RegexValidator
 
-
-User = get_user_model()
+from users.models import CustomUser
 
 
 class Order(models.Model):
@@ -25,14 +23,23 @@ class Order(models.Model):
         max_length=18, validators=[phone_regex,], blank=False)
     balance = models.DecimalField(max_digits=7, decimal_places=2, default=0)
     in_search = models.BooleanField(default=True)
-    driver = models.ForeignKey(User, on_delete=models.CASCADE, null=True)
+    driver = models.ForeignKey(CustomUser, on_delete=models.CASCADE, null=True)
     created_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
-        return str(self.driver)
+        return str(self.phone_number)
+
+
+class OrdersHistory(models.Model):
+    driver = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
+    client = models.ForeignKey(Order, on_delete=models.CASCADE)
 
 
 @receiver(post_save, sender=Order)
 def order_post_save(sender, instance, created, **kwargs):
     from orders.tasks import send_order
-    send_order.delay(instance.id)
+    send_order.delay(
+        order_id=instance.id,
+        from_city=instance.from_city,
+        to_city=instance.to_city,
+    )

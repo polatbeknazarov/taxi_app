@@ -1,10 +1,10 @@
 from django.db.models.signals import post_save
 from rest_framework import serializers
 
-from orders.models import Order
+from orders.models import Order, OrdersHistory
 
 
-class OrderSerizlizer(serializers.ModelSerializer):
+class OrderSerializer(serializers.ModelSerializer):
     from_city = serializers.CharField(required=True)
     to_city = serializers.CharField(required=True)
     address = serializers.CharField(required=True)
@@ -33,3 +33,9 @@ class OrderSerizlizer(serializers.ModelSerializer):
 
         order = Order.objects.create(**validated_data)
         return order
+    
+
+class OrdersHistorySerializer(serializers.Serializer):
+    class Meta:
+        model = OrdersHistory
+        fields = ('id', 'driver', 'client',)
