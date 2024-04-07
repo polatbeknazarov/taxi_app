@@ -24,7 +24,7 @@ class Order(models.Model):
     balance = models.DecimalField(max_digits=7, decimal_places=2, default=0)
     in_search = models.BooleanField(default=True)
     driver = models.ForeignKey(CustomUser, on_delete=models.CASCADE, null=True)
-    created_at = models.DateTimeField(auto_now=True)
+    created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return str(self.phone_number)
