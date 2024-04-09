@@ -1,7 +1,6 @@
 import json
-import datetime
 
-from django.shortcuts import get_object_or_404
+from datetime import datetime
 from asgiref.sync import sync_to_async
 from channels.generic.websocket import AsyncWebsocketConsumer
 
@@ -48,7 +47,7 @@ class LineConsumer(AsyncWebsocketConsumer):
         try:
             line_obj = await sync_to_async(Line.objects.get)(driver=self.user)
             await sync_to_async(Line.objects.filter(pk=line_obj.pk).update)(
-                from_city=self.from_city, to_city=self.to_city, status=True
+                from_city=self.from_city, to_city=self.to_city, status=True, created_at=datetime.utcnow()
             )
         except:
             await sync_to_async(Line.objects.create)(driver=self.user, from_city=self.from_city, to_city=self.to_city)
@@ -61,14 +60,17 @@ class LineConsumer(AsyncWebsocketConsumer):
                 driver.driver.username,
                 {
                     'type': 'send_message',
-                    'message': json.dumps(data),
+                    'message': json.dumps(
+                        {
+                            'line': data
+                        }
+                    ),
                 },
             )
 
     async def _send_line_disconnect(self):
         try:
             line = await sync_to_async(Line.objects.filter)(status=True, from_city=self.from_city, to_city=self.to_city)
-            await sync_to_async(print)('LINE', line)
             data = await sync_to_async(self._serialize_line)(line)
 
             for driver in line:
@@ -76,7 +78,9 @@ class LineConsumer(AsyncWebsocketConsumer):
                     driver.driver.username,
                     {
                         'type': 'send_message',
-                        'message': json.dumps(data),
+                        'message': json.dumps({
+                            'line': data
+                        }),
                     },
                 )
         except Exception as e:
@@ -112,6 +116,8 @@ class LineConsumer(AsyncWebsocketConsumer):
 
             if driver.passengers == 4:
                 await self._remove_driver_from_line()
+
+            await self._send_line_to_driver()
 
             await sync_to_async(OrdersHistory.objects.create)(driver=self.user, client=order)
             await sync_to_async(order.save)()

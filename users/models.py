@@ -16,3 +16,4 @@ class CustomUser(AbstractUser):
     )
     first_name = models.CharField(max_length=30, blank=False)
     last_name = models.CharField(max_length=30, blank=False)
+    balance = models.DecimalField(max_digits=9, decimal_places=2, default=0)
