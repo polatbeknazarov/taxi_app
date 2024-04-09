@@ -3,11 +3,14 @@ from django.contrib.auth.password_validation import validate_password
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 from djoser.serializers import UserCreateSerializer as DjoserUserCreateSerializer
+from djoser.serializers import UserSerializer as DjoserUserSerializer
+
+from orders.models import OrdersHistory
 
 CustomUser = get_user_model()
 
 
-class CustomUserSerializer(DjoserUserCreateSerializer):
+class CustomUserCreateSerializer(DjoserUserCreateSerializer):
     password2 = serializers.CharField(write_only=True)
 
     class Meta(DjoserUserCreateSerializer.Meta):
@@ -42,3 +45,21 @@ class CustomUserSerializer(DjoserUserCreateSerializer):
             raise serializers.ValidationError(errors)
 
         return value
+
+
+class CustomUserSerializer(DjoserUserSerializer):
+    passengers_count = serializers.SerializerMethodField()
+
+    class Meta(DjoserUserSerializer.Meta):
+        fields = (
+            'id',
+            'username',
+            'first_name',
+            'last_name',
+            'phone_number',
+            'balance',
+            'passengers_count',
+        )
+
+    def get_passengers_count(self, obj):
+        return OrdersHistory.objects.filter(driver=obj).count()

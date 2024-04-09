@@ -126,7 +126,8 @@ DJOSER = {
     'PASSWORD_RESET_CONFIRM_RETYPE': True,
     'TOKEN_MODEL': None, 
     'SERIALIZERS': {
-        'user_create_password_retype': 'users.serializers.CustomUserSerializer',
+        'user_create_password_retype': 'users.serializers.CustomUserCreateSerializer',
+        'current_user': 'users.serializers.CustomUserSerializer',
     },
 }
 
