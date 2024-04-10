@@ -28,5 +28,8 @@ class Line(models.Model):
     joined_at = models.DateTimeField(auto_now_add=True)
     status = models.BooleanField(default=True)
 
+    class Meta:
+        ordering = ['joined_at',]
+
     def __str__(self) -> str:
         return str(self.driver)

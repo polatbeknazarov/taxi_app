@@ -47,9 +47,9 @@ class LineConsumer(AsyncWebsocketConsumer):
         try:
             line_obj = await sync_to_async(Line.objects.get)(driver=self.user)
             await sync_to_async(Line.objects.filter(pk=line_obj.pk).update)(
-                from_city=self.from_city, to_city=self.to_city, status=True, created_at=datetime.utcnow()
+                from_city=self.from_city, to_city=self.to_city, status=True, joined_at=datetime.utcnow()
             )
-        except:
+        except Exception as e:
             await sync_to_async(Line.objects.create)(driver=self.user, from_city=self.from_city, to_city=self.to_city)
 
         line = await sync_to_async(Line.objects.filter)(status=True, from_city=self.from_city, to_city=self.to_city)
