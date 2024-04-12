@@ -15,21 +15,25 @@ from line.models import Line
 def send_order(order_id, from_city, to_city):
     lines = Line.objects.filter(status=True, from_city=from_city, to_city=to_city)
     order = Order.objects.get(id=order_id)
+    order_passengers = order.passengers
     data = OrderSerializer(order).data
 
     channel_layer = get_channel_layer()
 
     for line in lines:
         if not order.in_search:
-            return
+                return
 
-        async_to_sync(channel_layer.group_send)(
-            line.driver.username,
-            {
-                'type': 'send_message',
-                'message': json.dumps(data),
-            }
-        )
+        passengers = line.passengers + order_passengers
+
+        if passengers <= 4:
+            async_to_sync(channel_layer.group_send)(
+                line.driver.username,
+                {
+                    'type': 'send_message',
+                    'message': json.dumps({'order': data}),
+                }
+            )
 
         time.sleep(15)
         order.refresh_from_db()

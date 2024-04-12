@@ -6,7 +6,7 @@ from channels.generic.websocket import AsyncWebsocketConsumer
 
 from line.models import Line
 from line.serializers import LineSerializer
-from orders.models import Order, OrdersHistory
+from orders.models import Order, OrdersHistory, Client
 
 
 class LineConsumer(AsyncWebsocketConsumer):
@@ -29,7 +29,12 @@ class LineConsumer(AsyncWebsocketConsumer):
 
     async def disconnect(self, code):
         try:
-            await self._remove_driver_from_line()
+            line_obj = await sync_to_async(Line.objects.get)(driver=self.user)
+            await sync_to_async(Line.objects.filter(pk=line_obj.pk).update)(status=False)
+
+            await self.channel_layer.group_discard(
+                self.username, self.channel_name
+            )
             await self._send_line_disconnect()
         except Exception as e:
             print(e)
@@ -44,14 +49,6 @@ class LineConsumer(AsyncWebsocketConsumer):
             await self._handle_join_line(data)
 
     async def _send_line_to_driver(self):
-        try:
-            line_obj = await sync_to_async(Line.objects.get)(driver=self.user)
-            await sync_to_async(Line.objects.filter(pk=line_obj.pk).update)(
-                from_city=self.from_city, to_city=self.to_city, status=True, joined_at=datetime.utcnow()
-            )
-        except Exception as e:
-            await sync_to_async(Line.objects.create)(driver=self.user, from_city=self.from_city, to_city=self.to_city)
-
         line = await sync_to_async(Line.objects.filter)(status=True, from_city=self.from_city, to_city=self.to_city)
         data = await sync_to_async(self._serialize_line)(line)
 
@@ -86,15 +83,26 @@ class LineConsumer(AsyncWebsocketConsumer):
         except Exception as e:
             print('Send line is disconnect:', e)
 
+    async def _add_driver_to_line(self):
+        try:
+            line_obj = await sync_to_async(Line.objects.get)(driver=self.user)
+            await sync_to_async(Line.objects.filter(pk=line_obj.pk).update)(
+                from_city=self.from_city, to_city=self.to_city, status=True, joined_at=datetime.utcnow(), passengers=0
+            )
+        except Exception as e:
+            await sync_to_async(Line.objects.create)(driver=self.user, from_city=self.from_city, to_city=self.to_city)
+    
+    
     async def _remove_driver_from_line(self):
-        driver = await sync_to_async(Line.objects.filter)(driver=self.user)
-        await sync_to_async(driver.update)(status=False)
+        # driver = await sync_to_async(Line.objects.get)(driver=self.user)
+        # driver.status = False
+
+        line_obj = await sync_to_async(Line.objects.get)(driver=self.user)
+        await sync_to_async(Line.objects.filter(pk=line_obj.pk).update)(status=False)
 
         await self.channel_layer.group_discard(
             self.username, self.channel_name
         )
-
-        return True
 
     def _serialize_line(self, line):
         serializer = LineSerializer(line, many=True)
@@ -106,29 +114,42 @@ class LineConsumer(AsyncWebsocketConsumer):
 
         order = await sync_to_async(Order.objects.get)(id=order_id)
         driver = await sync_to_async(Line.objects.get)(driver=self.user)
+        client = await sync_to_async(Client.objects.get)(id=order.client_id)
 
-        if driver.passengers < 4:
-            order.driver = self.user
-            order.in_search = False
-            order.balance += 1000
+        order.driver = self.user
+        order.in_search = False
+        client.balance += 1000
+        driver.passengers += order.passengers
 
-            driver.passengers += 1
+        await sync_to_async(driver.save)()
+        await sync_to_async(client.save)()
 
-            if driver.passengers == 4:
-                await self._remove_driver_from_line()
+        if driver.passengers >= 4:
+            line_obj = await sync_to_async(Line.objects.get)(driver=self.user)
+            await sync_to_async(Line.objects.filter(pk=line_obj.pk).update)(status=False)
 
-            await self._send_line_to_driver()
+            await self.channel_layer.group_send(
+                self.username,
+                {
+                    'type': 'send_message',
+                    'message': json.dumps({'type': 'completed'})
+                }
+            )
 
-            await sync_to_async(OrdersHistory.objects.create)(driver=self.user, client=order)
-            await sync_to_async(order.save)()
-        else:
-            await self._remove_driver_from_line()
+            await self.channel_layer.group_add(
+                self.username, self.channel_name
+            )
+
+        await self._send_line_to_driver()
+
+        await sync_to_async(OrdersHistory.objects.create)(driver=self.user, client=order)
+        await sync_to_async(order.save)()
 
         await self.channel_layer.group_send(
             self.username,
             {
                 'type': 'send_message',
-                'message': 'True',
+                'message': json.dumps({'type': 'accepted', 'order_id': order_id}),
             },
         )
 
@@ -136,6 +157,7 @@ class LineConsumer(AsyncWebsocketConsumer):
         self.from_city = data['from_city']
         self.to_city = data['to_city']
 
+        await self._add_driver_to_line()
         await self._send_line_to_driver()
 
     async def send_message(self, event):

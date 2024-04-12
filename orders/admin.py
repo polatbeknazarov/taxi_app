@@ -1,12 +1,19 @@
 from django.contrib import admin
 
-from orders.models import Order, OrdersHistory
+from orders.models import Order, OrdersHistory, Client
+
+
+@admin.register(Client)
+class ClientAdmin(admin.ModelAdmin):
+    list_display = ('id', 'phone_number', 'balance',)
+    list_per_page = 30
+
 
 @admin.register(Order)
 class OrderAdmin(admin.ModelAdmin):
-    list_display = ('id', 'from_city', 'to_city', 'phone_number', 'address', 'created_at', 'balance', 'in_search',)
-    list_editable = ('from_city', 'to_city', 'phone_number', 'in_search')
-    search_fields = ('phone_number', 'address',)
+    list_display = ('id', 'client', 'from_city', 'to_city', 'address', 'created_at',)
+    list_editable = ('from_city', 'to_city',)
+    search_fields = ('client', 'address',)
     list_per_page = 30
 
 
