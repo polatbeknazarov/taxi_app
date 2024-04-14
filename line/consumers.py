@@ -2,11 +2,18 @@ import json
 
 from datetime import datetime
 from asgiref.sync import sync_to_async
+from django.db.models import F
+from django.contrib.auth import get_user_model
+from django.core.exceptions import ObjectDoesNotExist
 from channels.generic.websocket import AsyncWebsocketConsumer
 
 from line.models import Line
 from line.serializers import LineSerializer
 from orders.models import Order, OrdersHistory, Client
+from dispatcher.models import Pricing
+
+
+User = get_user_model()
 
 
 class LineConsumer(AsyncWebsocketConsumer):
@@ -86,22 +93,28 @@ class LineConsumer(AsyncWebsocketConsumer):
     async def _add_driver_to_line(self):
         try:
             line_obj = await sync_to_async(Line.objects.get)(driver=self.user)
-            await sync_to_async(Line.objects.filter(pk=line_obj.pk).update)(
-                from_city=self.from_city, to_city=self.to_city, status=True, joined_at=datetime.utcnow(), passengers=0
-            )
-        except Exception as e:
-            await sync_to_async(Line.objects.create)(driver=self.user, from_city=self.from_city, to_city=self.to_city)
-    
-    
-    async def _remove_driver_from_line(self):
-        # driver = await sync_to_async(Line.objects.get)(driver=self.user)
-        # driver.status = False
 
+            await sync_to_async(Line.objects.filter(pk=line_obj.pk).update)(
+                from_city=self.from_city, 
+                to_city=self.to_city, 
+                status=True, 
+                joined_at=datetime.utcnow(), 
+                passengers=0,
+            )
+        except ObjectDoesNotExist:
+            await sync_to_async(Line.objects.create)(
+                driver=self.user, 
+                from_city=self.from_city, 
+                to_city=self.to_city,
+            )
+
+    async def _remove_driver_from_line(self):
         line_obj = await sync_to_async(Line.objects.get)(driver=self.user)
         await sync_to_async(Line.objects.filter(pk=line_obj.pk).update)(status=False)
 
         await self.channel_layer.group_discard(
-            self.username, self.channel_name
+            self.username, 
+            self.channel_name,
         )
 
     def _serialize_line(self, line):
@@ -111,39 +124,44 @@ class LineConsumer(AsyncWebsocketConsumer):
 
     async def _handle_accept_order(self, data):
         order_id = data['order_id']
+        pricing = await sync_to_async(Pricing.get_singleton)()
 
         order = await sync_to_async(Order.objects.get)(id=order_id)
         driver = await sync_to_async(Line.objects.get)(driver=self.user)
         client = await sync_to_async(Client.objects.get)(id=order.client_id)
+        user = await sync_to_async(User.objects.get)(id=self.user.id)
 
-        order.driver = self.user
-        order.in_search = False
-        client.balance += 1000
-        driver.passengers += order.passengers
+        price = float(order.passengers) * float(pricing.order_fee)
 
-        await sync_to_async(driver.save)()
-        await sync_to_async(client.save)()
-
-        if driver.passengers >= 4:
-            line_obj = await sync_to_async(Line.objects.get)(driver=self.user)
-            await sync_to_async(Line.objects.filter(pk=line_obj.pk).update)(status=False)
-
+        if float(user.balance) - price < 0:
             await self.channel_layer.group_send(
                 self.username,
                 {
                     'type': 'send_message',
-                    'message': json.dumps({'type': 'completed'})
-                }
+                    'message': json.dumps({'type': 'rejected', 'detail': f'Insufficient funds. Your balance: {self.user.balance}'}),
+                },
             )
+            return
 
-            await self.channel_layer.group_add(
-                self.username, self.channel_name
-            )
+        order.driver = self.user
+
+        order.in_search = False
+        order.waiting = True
+        client.balance = F('balance') + pricing.order_bonus
+        driver.passengers += order.passengers
+        user.balance = F('balance') - price
+
+        await sync_to_async(driver.save)()
+        await sync_to_async(client.save)()
+        await sync_to_async(order.save)()
+        await sync_to_async(user.save)()
+
+        if driver.passengers >= 4:
+            await self._completed_driver()
 
         await self._send_line_to_driver()
 
-        await sync_to_async(OrdersHistory.objects.create)(driver=self.user, client=order)
-        await sync_to_async(order.save)()
+        await sync_to_async(OrdersHistory.objects.create)(driver=self.user, order=order)
 
         await self.channel_layer.group_send(
             self.username,
@@ -154,11 +172,39 @@ class LineConsumer(AsyncWebsocketConsumer):
         )
 
     async def _handle_join_line(self, data):
-        self.from_city = data['from_city']
-        self.to_city = data['to_city']
+        price = await sync_to_async(Pricing.get_singleton)()
+        if float(self.user.balance) > float(price.order_fee):
+            self.from_city = data['from_city']
+            self.to_city = data['to_city']
 
-        await self._add_driver_to_line()
-        await self._send_line_to_driver()
+            await self._add_driver_to_line()
+            await self._send_line_to_driver()
+        else:
+            await self.channel_layer.group_send(
+                self.username,
+                {
+                    'type': 'send_message',
+                    'message': json.dumps({'type': 'rejected', 'detail': f'Insufficient funds. Your balance: {self.user.balance}'}),
+                },
+            )
+
+    async def _completed_driver(self):
+        line_obj = await sync_to_async(Line.objects.get)(driver=self.user)
+
+        await sync_to_async(Line.objects.filter(pk=line_obj.pk).update)(status=False)
+        await sync_to_async(Order.objects.filter(driver=self.user.pk, waiting=True).update)(waiting=False)
+
+        await self.channel_layer.group_send(
+            self.username,
+            {
+                'type': 'send_message',
+                'message': json.dumps({'type': 'completed'})
+            }
+        )
+
+        await self.channel_layer.group_add(
+            self.username, self.channel_name
+        )
 
     async def send_message(self, event):
         message = event['message']

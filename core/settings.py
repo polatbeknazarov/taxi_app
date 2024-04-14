@@ -26,6 +26,7 @@ INSTALLED_APPS = [
     'users',
     'line',
     'orders',
+    'dispatcher',
 ]
 
 MIDDLEWARE = [
@@ -102,7 +103,7 @@ STATIC_URL = 'static/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-# Django channels
+
 CHANNEL_LAYERS = {
     'default': {
         'BACKEND': 'channels_redis.core.RedisChannelLayer',
@@ -119,7 +120,6 @@ REST_FRAMEWORK = {
     ),
 }
 
-#Djoser
 DJOSER = {
     'USER_CREATE_PASSWORD_RETYPE': True,
     'SET_PASSWORD_RETYPE': True,
@@ -139,7 +139,6 @@ SIMPLE_JWT = {
 }
 
 
-#Selery
 REDIS_HOST = '0.0.0.0'
 REDIS_PORT = '6379'
 CELERY_BROKER_URL = 'redis://' + REDIS_HOST + ':' + REDIS_PORT + '/0'

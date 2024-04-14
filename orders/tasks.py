@@ -9,10 +9,12 @@ from channels.layers import get_channel_layer
 from orders.models import Order
 from orders.serializers import OrderSerializer
 from line.models import Line
+from dispatcher.models import Pricing
 
 
 @app.task
 def send_order(order_id, from_city, to_city):
+    pricing = Pricing.get_singleton()
     lines = Line.objects.filter(status=True, from_city=from_city, to_city=to_city)
     order = Order.objects.get(id=order_id)
     order_passengers = order.passengers
@@ -25,8 +27,9 @@ def send_order(order_id, from_city, to_city):
                 return
 
         passengers = line.passengers + order_passengers
+        price = pricing.order_fee * order_passengers
 
-        if passengers <= 4:
+        if passengers <= 4 and float(line.driver.balance) > price:
             async_to_sync(channel_layer.group_send)(
                 line.driver.username,
                 {
