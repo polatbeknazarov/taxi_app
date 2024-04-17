@@ -48,12 +48,26 @@ class LineConsumer(AsyncWebsocketConsumer):
 
     async def receive(self, text_data):
         data = json.loads(text_data)
+        print(data)
 
         if data['type'] == 'accept':
             await self._handle_accept_order(data)
 
         if data['type'] == 'join_line':
             await self._handle_join_line(data)
+        
+        if data['type'] == 'work_completed':
+            await self.channel_layer.group_send(
+                self.username,
+                {
+                    'type': 'send_message',
+                    'message': json.dumps(
+                        {
+                            'hello': 'world'
+                        }
+                    ),
+                },
+            )
 
     async def _send_line_to_driver(self):
         line = await sync_to_async(Line.objects.filter)(status=True, from_city=self.from_city, to_city=self.to_city)
