@@ -55,7 +55,6 @@ class Order(models.Model):
     )
     address = models.TextField(blank=False)
     in_search = models.BooleanField(default=True)
-    waiting = models.BooleanField(default=False)
     driver = models.ForeignKey(
         CustomUser,
         on_delete=models.CASCADE,

@@ -46,7 +46,7 @@ class CurrentPassengersAPIView(APIView):
 
     def get(self, request):
         user = request.user
-        orders = Order.objects.filter(driver=user.id, waiting=True)
+        orders = Order.objects.filter(driver=user.id)[:4]
         serializer = OrderSerializer(orders, many=True)
 
         return Response(serializer.data)

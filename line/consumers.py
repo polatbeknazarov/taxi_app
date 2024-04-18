@@ -160,7 +160,6 @@ class LineConsumer(AsyncWebsocketConsumer):
         order.driver = self.user
 
         order.in_search = False
-        order.waiting = True
         client.balance = F('balance') + pricing.order_bonus
         driver.passengers += order.passengers
         user.balance = F('balance') - price
@@ -206,7 +205,6 @@ class LineConsumer(AsyncWebsocketConsumer):
         line_obj = await sync_to_async(Line.objects.get)(driver=self.user)
 
         await sync_to_async(Line.objects.filter(pk=line_obj.pk).update)(status=False)
-        await sync_to_async(Order.objects.filter(driver=self.user.pk, waiting=True).update)(waiting=False)
 
         await self.channel_layer.group_send(
             self.username,

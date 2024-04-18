@@ -141,7 +141,7 @@ DJOSER = {
     'USER_CREATE_PASSWORD_RETYPE': True,
     'SET_PASSWORD_RETYPE': True,
     'PASSWORD_RESET_CONFIRM_RETYPE': True,
-    'TOKEN_MODEL': None, 
+    'TOKEN_MODEL': None,
     'SERIALIZERS': {
         'user_create_password_retype': 'users.serializers.CustomUserCreateSerializer',
         'current_user': 'users.serializers.CustomUserSerializer',
