@@ -1,5 +1,6 @@
 from django.contrib.auth import get_user_model
 from django.contrib.auth.password_validation import validate_password
+from django.db.models import Sum
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 from djoser.serializers import UserCreateSerializer as DjoserUserCreateSerializer
@@ -62,4 +63,7 @@ class CustomUserSerializer(DjoserUserSerializer):
         )
 
     def get_passengers_count(self, obj):
-        return OrdersHistory.objects.filter(driver=obj).count()
+        orders_history = OrdersHistory.objects.filter(driver=obj)
+        total_passengers = orders_history.aaggregate(total_passengers=Sum('order__passengers'))['total_passengers']
+
+        return total_passengers
