@@ -4,7 +4,6 @@ WORKDIR /app
 
 COPY . /app/
 
-RUN apt-get update && apt-get install -y curl && apt-get clean
 RUN pip install poetry && poetry config virtualenvs.create false && poetry install --no-dev
 
 CMD python manage.py makemigrations \
