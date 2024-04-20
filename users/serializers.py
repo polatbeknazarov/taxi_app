@@ -64,6 +64,5 @@ class CustomUserSerializer(DjoserUserSerializer):
 
     def get_passengers_count(self, obj):
         orders_history = OrdersHistory.objects.filter(driver=obj)
-        total_passengers = orders_history.aaggregate(total_passengers=Sum('order__passengers'))['total_passengers']
-
+        total_passengers = orders_history.aggregate(total_passengers=Sum('order__passengers'))['total_passengers']
         return total_passengers
