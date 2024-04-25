@@ -31,8 +31,6 @@ services:
     depends_on:
       - postgres
       - redis
-      - celery
-
     environment:
       <<: *enviroment-defaults
     volumes:
@@ -53,45 +51,11 @@ services:
       - web
     networks:
       - my_network
-  
-  certbot:
-    image: certbot/certbot
-    container_name: certbot
-    volumes:
-      - ./certbot/conf:/etc/letsencrypt
-      - ./certbot/www:/var/www/certbot
-    command: certonly --webroot -w /var/www/certbot --force-renewal --email polatbekbeknazarov2003@gmail.com -d 1s-taxi.uz --agree-tos
-    networks:
-      - my_network
-
-  daphne:
-    build:
-      context: .
-    command: daphne -p 8001 --bind 0.0.0.0 core.asgi:application
-    depends_on:
-      - postgres
-      - redis
-    environment:
-      <<: *enviroment-defaults
-    networks:
-      - my_network
 
   redis:
     image: redis:latest
     ports:
       - "6379:6379"
-    networks:
-      - my_network
-
-  celery:
-    build:
-      context: .
-    command: celery -A core worker --loglevel=info
-    depends_on:
-      - redis
-      - postgres
-    environment:
-      <<: *enviroment-defaults
     networks:
       - my_network
 
