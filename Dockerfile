@@ -4,12 +4,13 @@ WORKDIR /app
 
 COPY . /app/
 
-RUN pip install poetry && poetry config virtualenvs.create false && poetry install --no-dev
+
+RUN pip install poetry && poetry config virtualenvs.create false && poetry install --no-dev && pip install 'Twisted[tls,http2]'
 
 CMD python manage.py makemigrations \
     && python manage.py migrate \
-    && python manage.py shell -c "from django.contrib.auth import get_user_model; User = get_user_model(); User.objects.filter(username='root').exists() or User.objects.create_superuser('root', 'root@example.com', 'root')" \
+    && python manage.py shell -c "from django.contrib.auth import get_user_model; User = get_user_model(); User.objects.filter(username='root').exists() or User.objects.create_superuser('root', 'root@exaot@example.com', 'root')" \
     && python manage.py collectstatic --no-input \
     && gunicorn --bind 0.0.0.0:8000 core.wsgi:application & \
-    daphne -b 0.0.0.0:8001 conf.asgi:application & \
+    daphne -b 0.0.0.0 -p 8001 core.asgi:application & \
     celery -A core worker --loglevel=info

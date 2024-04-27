@@ -156,12 +156,12 @@ class LineConsumer(AsyncWebsocketConsumer):
         await sync_to_async(order.save)()
         await sync_to_async(user.save)()
 
-        if driver.passengers >= 4:
+        await sync_to_async(OrdersHistory.objects.create)(driver=self.user, order=order)
+
+        if driver.passengers == 4:
             await self._completed_driver()
 
         await self._send_line_to_driver()
-
-        await sync_to_async(OrdersHistory.objects.create)(driver=self.user, order=order)
 
         await self.channel_layer.group_send(
             self.username,
