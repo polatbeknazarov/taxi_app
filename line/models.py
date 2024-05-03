@@ -12,7 +12,7 @@ class Line(models.Model):
         ('SB', 'Шымбай'),
     ]
 
-    driver = models.ForeignKey(User, on_delete=models.CASCADE)
+    driver = models.ForeignKey(User, on_delete=models.CASCADE, related_name='driver_lines')
     from_city = models.CharField(
         max_length=2,
         choices=CITY_CHOICES,

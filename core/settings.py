@@ -11,7 +11,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = os.environ.get('SECRET_KEY')
 
-DEBUG = os.environ.get('DEBUG').lower() == 'true'
+DEBUG = True
 
 ALLOWED_HOSTS = ['*']
 
@@ -25,6 +25,8 @@ INSTALLED_APPS = [
     'djoser',
     'daphne',
     'corsheaders',
+    'tailwind',
+    'theme',
 
     'django.contrib.admin',
     'django.contrib.auth',
@@ -73,14 +75,21 @@ ASGI_APPLICATION = 'core.asgi.application'
 WSGI_APPLICATION = 'core.wsgi.application'
 
 
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.postgresql',
+#         'NAME': os.environ.get('DB_NAME'),
+#         'USER': os.environ.get('DB_USER'),
+#         'PASSWORD': os.environ.get('DB_PASSWORD'),
+#         'HOST': os.environ.get('DB_HOST'),
+#         'PORT': os.environ.get('DB_PORT'),
+#     }
+# }
+
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': os.environ.get('DB_NAME'),
-        'USER': os.environ.get('DB_USER'),
-        'PASSWORD': os.environ.get('DB_PASSWORD'),
-        'HOST': os.environ.get('DB_HOST'),
-        'PORT': os.environ.get('DB_PORT'),
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / "db.sqlite3",
     }
 }
 
@@ -112,9 +121,11 @@ USE_I18N = True
 
 USE_TZ = True
 
+LOGIN_URL = '/login/'
+
 
 STATIC_URL = 'static/'
-STATIC_ROOT = os.path.join(BASE_DIR, STATIC_URL)
+# STATIC_ROOT = os.path.join(BASE_DIR, STATIC_URL)
 
 MEDIA_URL = "media/"
 MEDIA_ROOT = os.path.join(BASE_DIR, MEDIA_URL)
@@ -163,3 +174,10 @@ CELERY_RESULT_BACKEND = os.environ.get('CELERY_RESULT_BACKEND')
 CELERY_ACCEPT_CONTENT = ['application/json']
 CELERY_TASK_SERIALIZER = 'json'
 CELERY_RESULT_SERIALIZER = 'json'
+
+
+TAILWIND_APP_NAME = 'theme'
+
+INTERNAL_IPS = [
+    '127.0.0.1',
+]

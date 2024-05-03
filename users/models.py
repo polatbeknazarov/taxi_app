@@ -21,3 +21,6 @@ class CustomUser(AbstractUser):
         decimal_places=2,
         default=0,
     )
+    passport = models.ImageField(upload_to='images/', blank=True)
+    is_driver = models.BooleanField(default=False)
+    is_dispatcher = models.BooleanField(default=False)

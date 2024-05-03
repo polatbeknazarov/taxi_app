@@ -8,44 +8,45 @@ from djoser.serializers import UserSerializer as DjoserUserSerializer
 
 from orders.models import OrdersHistory
 
+
 CustomUser = get_user_model()
 
 
-class CustomUserCreateSerializer(DjoserUserCreateSerializer):
-    password2 = serializers.CharField(write_only=True)
+# class CustomUserCreateSerializer(DjoserUserCreateSerializer):
+#     password2 = serializers.CharField(write_only=True)
 
-    class Meta(DjoserUserCreateSerializer.Meta):
-        model = CustomUser
-        fields = (
-            'id',
-            'username',
-            'first_name',
-            'last_name',
-            'phone_number',
-            'password',
-            'password2',
-        )
+#     class Meta(DjoserUserCreateSerializer.Meta):
+#         model = CustomUser
+#         fields = (
+#             'id',
+#             'username',
+#             'first_name',
+#             'last_name',
+#             'phone_number',
+#             'password',
+#             'password2',
+#         )
 
-    def validate(self, attrs):
-        if attrs['password'] != attrs.pop('password2'):
-            raise serializers.ValidationError("Passwords do not match")
+#     def validate(self, attrs):
+#         if attrs['password'] != attrs.pop('password2'):
+#             raise serializers.ValidationError("Passwords do not match")
 
-        validate_password(attrs['password'], user=CustomUser)
+#         validate_password(attrs['password'], user=CustomUser)
 
-        return attrs
+#         return attrs
 
-    def validate_password(self, value):
-        errors = dict()
+#     def validate_password(self, value):
+#         errors = dict()
 
-        try:
-            validate_password(value, user=self.instance)
-        except ValidationError as e:
-            errors['password'] = list(e.messages)
+#         try:
+#             validate_password(value, user=self.instance)
+#         except ValidationError as e:
+#             errors['password'] = list(e.messages)
 
-        if errors:
-            raise serializers.ValidationError(errors)
+#         if errors:
+#             raise serializers.ValidationError(errors)
 
-        return value
+#         return value
 
 
 class CustomUserSerializer(DjoserUserSerializer):
@@ -60,9 +61,12 @@ class CustomUserSerializer(DjoserUserSerializer):
             'phone_number',
             'balance',
             'passengers_count',
+            'is_driver',
+            'is_dispatcher',
         )
 
     def get_passengers_count(self, obj):
         orders_history = OrdersHistory.objects.filter(driver=obj)
-        total_passengers = orders_history.aggregate(total_passengers=Sum('order__passengers'))['total_passengers']
+        total_passengers = orders_history.aggregate(
+            total_passengers=Sum('order__passengers'))['total_passengers']
         return total_passengers if total_passengers is not None else 0

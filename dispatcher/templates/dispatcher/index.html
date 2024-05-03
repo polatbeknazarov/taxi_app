@@ -1,0 +1,273 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h1 class="my-[10px] font-bold text-[18px]">Общая статистика</h1>
+
+<div class="grid grid-cols-3 gap-[10px]">
+    <div class="shadow-lg bg-white p-4 rounded-md h-[150px] flex justify-between">
+        <div class="flex flex-col justify-between">
+            <p class="font-bold text-[16px]">Общее количество водителей</p>
+            <p class="font-semibold text-green-500">{{ drivers_quantity }}</p>
+            <span class="font-normal text-gray-400 text-[12px]">За все время</span>
+        </div>
+
+        <div class="flex items-center">
+            <div class="bg-[#2fb0fa50] p-1 rounded-full">
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-chart-line" width="24"
+                    height="24" viewBox="0 0 24 24" stroke-width="3" stroke="#2fb0fa" fill="none"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                    <path d="M4 19l16 0" />
+                    <path d="M4 15l4 -6l4 2l4 -5l4 4" />
+                </svg>
+            </div>
+        </div>
+    </div>
+    <div class="shadow-lg bg-white p-4 rounded-md h-[150px] flex justify-between">
+        <div class="flex flex-col justify-between">
+            <p class="font-bold text-[16px]">Общее количество клиентов</p>
+            <p class="font-semibold text-green-500">{{ clients_quantity }}</p>
+            <span class="font-normal text-gray-400 text-[12px]">За все время</span>
+        </div>
+
+        <div class="flex items-center">
+            <div class="bg-[#2563f550] p-2 rounded-full">
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-users" width="24"
+                    height="24" viewBox="0 0 24 24" stroke-width="3" stroke="#2563f5" fill="none"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                    <path d="M9 7m-4 0a4 4 0 1 0 8 0a4 4 0 1 0 -8 0" />
+                    <path d="M3 21v-2a4 4 0 0 1 4 -4h4a4 4 0 0 1 4 4v2" />
+                    <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+                    <path d="M21 21v-2a4 4 0 0 0 -3 -3.85" />
+                </svg>
+            </div>
+        </div>
+    </div>
+    <div class="shadow-lg bg-white p-4 rounded-md h-[150px] flex justify-between">
+        <div class="flex flex-col justify-between">
+            <p class="font-bold text-[16px]">Общее количество заявок</p>
+            <p class="font-semibold text-green-500">{{ orders_quantity }}</p>
+            <span class="font-normal text-gray-400 text-[12px]">За все время</span>
+        </div>
+
+        <div class="flex items-center">
+            <div class="bg-[#7be30b50] p-2 rounded-full">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                    stroke="#7be30b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                    <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                </svg>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<h1 class="mt-[20px] mb-[10px] font-bold text-[18px]">Список заявок</h1>
+<div class="p-2 bg-white rounded-md shadow-lg mb-[20px]">
+    <table class="table-auto w-full divide-y divide-gray-200">
+        <thead>
+            <tr>
+                <th scope="col"
+                    class="px-6 py-3 text-start text-xs font-medium text-gray-500 uppercase dark:text-neutral-500">Номер телефона</th>
+                <th scope="col"
+                    class="px-6 py-3 text-start text-xs font-medium text-gray-500 uppercase dark:text-neutral-500">Пассажиров
+                </th>
+                <th scope="col"
+                    class="px-6 py-3 text-start text-xs font-medium text-gray-500 uppercase dark:text-neutral-500">
+                    Из
+                </th>
+                <th scope="col"
+                    class="px-6 py-3 text-start text-xs font-medium text-gray-500 uppercase dark:text-neutral-500">В</th>
+                <th scope="col"
+                    class="px-6 py-3 text-start text-xs font-medium text-gray-500 uppercase dark:text-neutral-500">
+                    Дата</th>
+                <th scope="col"
+                    class="px-6 py-3 text-start text-xs font-medium text-gray-500 uppercase dark:text-neutral-500">Статус</th>
+                    <th scope="col"
+                    class="px-6 py-3 text-start text-xs font-medium text-gray-500 uppercase dark:text-neutral-500">Бонус</th>
+            </tr>
+        </thead>
+        <tbody class="divide-y divide-gray-200">
+
+            {% if orders_list %}
+            {% for order in orders_list %}
+            <tr>
+                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-800">{{order.client}}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-800">{{ order.passengers }}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-800">{{ order.from_city }}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-800">{{ order.to_city }}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-800">{{ order.created_at }}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-800">{{ order.in_search }}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-800">{{ order.client.balance }}</td>
+            </tr>
+            {% endfor %}
+            {% else %}
+                <tr>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-800">Список пуст</td>
+                </tr>
+            {% endif %}
+        </tbody>
+    </table>
+
+
+    {% comment %} <nav class="w-full" aria-label="Page navigation example">
+        <ul class="flex items-center justify-center mt-4 -space-x-px h-8 text-sm">
+            <li>
+                <a href="#"
+                    class="flex items-center justify-center px-3 h-8 ms-0 leading-tight text-gray-500 bg-white border border-e-0 border-gray-300 rounded-s-lg hover:bg-gray-100 hover:text-gray-700">
+                    <span class="sr-only">Previous</span>
+                    <svg class="w-2.5 h-2.5 rtl:rotate-180" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"
+                        fill="none" viewBox="0 0 6 10">
+                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M5 1 1 5l4 4" />
+                    </svg>
+                </a>
+            </li>
+            <li>
+                <a href="#"
+                    class="flex items-center justify-center px-3 h-8 leading-tight text-gray-500 bg-white border border-gray-300 hover:bg-gray-100 hover:text-gray-700">1</a>
+            </li>
+            <li>
+                <a href="#"
+                    class="flex items-center justify-center px-3 h-8 leading-tight text-gray-500 bg-white border border-gray-300 hover:bg-gray-100 hover:text-gray-70">2</a>
+            </li>
+            <li>
+                <a href="#" aria-current="page"
+                    class="z-10 flex items-center justify-center px-3 h-8 leading-tight text-blue-600 border border-blue-300 bg-blue-50 hover:bg-blue-100 hover:text-blue-700">3</a>
+            </li>
+            <li>
+                <a href="#"
+                    class="flex items-center justify-center px-3 h-8 leading-tight text-gray-500 bg-white border border-gray-300 hover:bg-gray-100 hover:text-gray-700 ">4</a>
+            </li>
+            <li>
+                <a href="#"
+                    class="flex items-center justify-center px-3 h-8 leading-tight text-gray-500 bg-white border border-gray-300 hover:bg-gray-100 hover:text-gray-700 ">5</a>
+            </li>
+            <li>
+                <a href="#"
+                    class="flex items-center justify-center px-3 h-8 leading-tight text-gray-500 bg-white border border-gray-300 rounded-e-lg hover:bg-gray-100 hover:text-gray-700 ">
+                    <span class="sr-only">Next</span>
+                    <svg class="w-2.5 h-2.5 rtl:rotate-180" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"
+                        fill="none" viewBox="0 0 6 10">
+                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="m1 9 4-4-4-4" />
+                    </svg>
+                </a>
+            </li>
+        </ul>
+    </nav> {% endcomment %}
+</div>
+
+<h1 class="mt-[20px] mb-[10px] font-bold text-[18px]">Список водителей</h1>
+<div class="p-2 bg-white rounded-md shadow-lg">
+    <table class="table-auto w-full divide-y divide-gray-200">
+        <thead>
+            <tr>
+                <th scope="col"
+                    class="px-6 py-3 text-start text-xs font-medium text-gray-500 uppercase dark:text-neutral-500">Имя пользователя</th>
+                <th scope="col"
+                    class="px-6 py-3 text-start text-xs font-medium text-gray-500 uppercase dark:text-neutral-500">Имя
+                </th>
+                <th scope="col"
+                    class="px-6 py-3 text-start text-xs font-medium text-gray-500 uppercase dark:text-neutral-500">
+                    Фамилия
+                </th>
+                <th scope="col"
+                    class="px-6 py-3 text-start text-xs font-medium text-gray-500 uppercase dark:text-neutral-500">Номер
+                    телефона</th>
+                <th scope="col"
+                    class="px-6 py-3 text-start text-xs font-medium text-gray-500 uppercase dark:text-neutral-500">
+                    Пассажиров</th>
+                <th scope="col"
+                    class="px-6 py-3 text-start text-xs font-medium text-gray-500 uppercase dark:text-neutral-500">
+                    Присоединился в</th>
+                    <th scope="col"
+                    class="px-6 py-3 text-start text-xs font-medium text-gray-500 uppercase dark:text-neutral-500">
+                    Баланс</th>
+                <th scope="col"
+                    class="px-6 py-3 text-start text-xs font-medium text-gray-500 uppercase dark:text-neutral-500">
+                    Статус</th>
+            </tr>
+        </thead>
+        <tbody class="divide-y divide-gray-200">
+
+            {% if drivers_list %}
+            {% for driver in drivers_list %}
+            <tr>
+                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-blue-300 underline"><a
+                        href="{% url 'driver_details' driver.pk %}">{{ driver.driver }}</a></td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-800">{{ driver.driver.first_name }}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-800">{{ driver.driver.last_name }}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-800">{{ driver.driver.phone_number }}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-800">{{ driver.passengers }}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-800">{{ driver.joined_at }}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-800">{{ driver.driver.balance }}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-800">
+                    <span class="text-[10px] px-[7px] py-[2px] rounded-full {% if driver.status %}bg-green-400{% else %}bg-red-500{% endif %} text-white font-semibold">
+                        {% if driver.status %}Онлайн{% else %}Офлайн{% endif %}
+                    </span>
+                </td>
+            </tr>
+            {% endfor %}
+            {% else %}
+            <tr>
+                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-blue-300 underline">
+                    Список пуст
+                </td>
+            </tr>
+            {% endif %}
+        </tbody>
+    </table>
+
+
+    {% comment %} <nav class="w-full" aria-label="Page navigation example">
+        <ul class="flex items-center justify-center mt-4 -space-x-px h-8 text-sm">
+            <li>
+                <a href="#"
+                    class="flex items-center justify-center px-3 h-8 ms-0 leading-tight text-gray-500 bg-white border border-e-0 border-gray-300 rounded-s-lg hover:bg-gray-100 hover:text-gray-700">
+                    <span class="sr-only">Previous</span>
+                    <svg class="w-2.5 h-2.5 rtl:rotate-180" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"
+                        fill="none" viewBox="0 0 6 10">
+                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M5 1 1 5l4 4" />
+                    </svg>
+                </a>
+            </li>
+            <li>
+                <a href="#"
+                    class="flex items-center justify-center px-3 h-8 leading-tight text-gray-500 bg-white border border-gray-300 hover:bg-gray-100 hover:text-gray-700">1</a>
+            </li>
+            <li>
+                <a href="#"
+                    class="flex items-center justify-center px-3 h-8 leading-tight text-gray-500 bg-white border border-gray-300 hover:bg-gray-100 hover:text-gray-70">2</a>
+            </li>
+            <li>
+                <a href="#" aria-current="page"
+                    class="z-10 flex items-center justify-center px-3 h-8 leading-tight text-blue-600 border border-blue-300 bg-blue-50 hover:bg-blue-100 hover:text-blue-700">3</a>
+            </li>
+            <li>
+                <a href="#"
+                    class="flex items-center justify-center px-3 h-8 leading-tight text-gray-500 bg-white border border-gray-300 hover:bg-gray-100 hover:text-gray-700 ">4</a>
+            </li>
+            <li>
+                <a href="#"
+                    class="flex items-center justify-center px-3 h-8 leading-tight text-gray-500 bg-white border border-gray-300 hover:bg-gray-100 hover:text-gray-700 ">5</a>
+            </li>
+            <li>
+                <a href="#"
+                    class="flex items-center justify-center px-3 h-8 leading-tight text-gray-500 bg-white border border-gray-300 rounded-e-lg hover:bg-gray-100 hover:text-gray-700 ">
+                    <span class="sr-only">Next</span>
+                    <svg class="w-2.5 h-2.5 rtl:rotate-180" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"
+                        fill="none" viewBox="0 0 6 10">
+                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="m1 9 4-4-4-4" />
+                    </svg>
+                </a>
+            </li>
+        </ul>
+    </nav> {% endcomment %}
+</div>
+
+{% endblock content %}

@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+
+{% block title %}1S. TAXI - Создание заявки{% endblock title %}
+
+{% block content %}
+<h1 class="my-[10px] font-bold text-[18px]">Создание заявки</h1>
+
+<form method="POST">
+    {% csrf_token %}
+    <div class="grid gap-6 mb-6 md:grid-cols-2">
+        <div>
+            <label for="phone" class="block mb-2 text-sm font-medium text-gray-900">Номер телефона</label>
+            <input type="tel" id="phone" name="phone_number"
+                class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
+                placeholder="Введите номер телефона клиента" pattern="^\+?\d{12}$" title="Введите корректный номер телефона (например: +998933640767)" required />
+        </div>
+        <div>
+            <label for="first_name" class="block mb-2 text-sm font-medium text-gray-900">Количество пассажиров</label>
+            <select id="countries" name="passengers"
+                class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
+                <option selected>Выберите количество пассажиров</option>
+                <option value="1" selected>1</option>
+                <option value="2">2</option>
+                <option value="3">3</option>
+                <option value="4">4</option>
+            </select>
+        </div>
+        <div>
+            <label for="last_name" class="block mb-2 text-sm font-medium text-gray-900">Выберите маршрут</label>
+            <select id="countries" name="from_city"
+                class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
+                <option value="NK">Нукус</option>
+                <option value="SB">Шымбай</option>
+            </select>
+        </div>
+        <div>
+            <label for="company" class="block mb-2 text-sm font-medium text-gray-900">&nbsp;</label>
+            <select id="countries" name="to_city"
+                class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
+                <option value="NK">Нукус</option>
+                <option selected value="SB">Шымбай</option>
+            </select>
+        </div>
+    </div>
+    <div class="mb-[20px]">
+
+        <label for="message" class="block mb-2 text-sm font-medium text-gray-900">Адрес</label>
+        <textarea id="message" rows="4" name="address"
+            class="block p-2.5 w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500"
+            placeholder="Например: Ул. Беруний, 25/1. Ориентир: Лас-Вегас ресторан" required></textarea>
+
+    </div>
+    <button type="submit"
+        class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center">Сохранить</button>
+</form>
+{% if message %}
+<p class="text-green-500 mt-5">{{ message }}</p>
+{% else %}
+<p class="text-red-500 mt-5">{{ message }}</p>
+{% endif %}
+{% endblock %}
