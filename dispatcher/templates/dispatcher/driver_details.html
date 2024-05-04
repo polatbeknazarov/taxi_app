@@ -8,12 +8,11 @@
 
 <form method="post" enctype="multipart/form-data">
     {% csrf_token %}
-    <!-- {{ form.as_p }} -->
     <div class="grid gap-6 mb-6 md:grid-cols-2">
         <div>
             <label for="id_first_name" class="block mb-2 text-sm font-medium text-gray-900">Имя</label>
             <input 
-                type="text" 
+                type="text"
                 value={{ form.first_name.value }} 
                 name="first_name"
                 id="id_first_name"
@@ -33,7 +32,7 @@
                 placeholder="Введите фамилию" required />
         </div>
         <div>
-            <label for="id_username" class="block mb-2 text-sm font-medium text-gray-900">Гос. номер</label>
+            <label for="id_username" class="block mb-2 text-sm font-medium text-gray-900">Имя пользователя</label>
             <input
                 type="text" value={{ form.username.value }} id="id_username" name="username"
                 class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
@@ -56,7 +55,11 @@
         >
     <div class="my-[20px]">
         <span class="text-[14px] font-semibold">Текущее изображение:</span>
+        {% if driver.passport %}
         <img src="{{ driver.passport.url }}" width="200" alt="">
+        {% else %}
+        <span class="text-[12px] text-gray-500">Нет изображения</span>
+        {% endif %}
     </div>
     <!-- <div class="mb-6">
         <label for="password" class="block mb-2 text-sm font-medium text-gray-900">Введите новый пароль</label>

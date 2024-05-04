@@ -47,16 +47,12 @@
     <button type="submit" class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center">Сохранить</button>
 </form>
 
-{% if form.errors %}
-<div class="mt-[20px]">
-    <ul>
-        {% for field in form %}
-            {% for error in field.errors %}
-                <li class="text-red-500 text-[12px]">{{ field.label }}: {{ error }}</li>
-            {% endfor %}
+{% if messages %}
+    <ul class="text-red-500">
+        {% for message in messages %}
+            <li>{{ message }}</li>
         {% endfor %}
     </ul>
-</div>
 {% endif %}
 
 {% endblock content %}

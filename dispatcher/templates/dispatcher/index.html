@@ -12,7 +12,7 @@
         </div>
 
         <div class="flex items-center">
-            <div class="bg-[#2fb0fa50] p-1 rounded-full">
+            <div class="bg-[#2fb0fa50] p-2 rounded-full">
                 <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-chart-line" width="24"
                     height="24" viewBox="0 0 24 24" stroke-width="3" stroke="#2fb0fa" fill="none"
                     stroke-linecap="round" stroke-linejoin="round">
@@ -70,23 +70,23 @@
         <thead>
             <tr>
                 <th scope="col"
-                    class="px-6 py-3 text-start text-xs font-medium text-gray-500 uppercase dark:text-neutral-500">Номер телефона</th>
+                    class="px-6 py-3 text-start text-xs font-medium uppercase text-gray-500">Номер телефона</th>
                 <th scope="col"
-                    class="px-6 py-3 text-start text-xs font-medium text-gray-500 uppercase dark:text-neutral-500">Пассажиров
+                    class="px-6 py-3 text-start text-xs font-medium uppercase text-gray-500">Пассажиров
                 </th>
                 <th scope="col"
-                    class="px-6 py-3 text-start text-xs font-medium text-gray-500 uppercase dark:text-neutral-500">
+                    class="px-6 py-3 text-start text-xs font-medium uppercase text-gray-500">
                     Из
                 </th>
                 <th scope="col"
-                    class="px-6 py-3 text-start text-xs font-medium text-gray-500 uppercase dark:text-neutral-500">В</th>
+                    class="px-6 py-3 text-start text-xs font-medium uppercase text-gray-500">В</th>
                 <th scope="col"
-                    class="px-6 py-3 text-start text-xs font-medium text-gray-500 uppercase dark:text-neutral-500">
+                    class="px-6 py-3 text-start text-xs font-medium uppercase text-gray-500">
                     Дата</th>
                 <th scope="col"
-                    class="px-6 py-3 text-start text-xs font-medium text-gray-500 uppercase dark:text-neutral-500">Статус</th>
+                    class="px-6 py-3 text-start text-xs font-medium uppercase text-gray-500">Статус</th>
                     <th scope="col"
-                    class="px-6 py-3 text-start text-xs font-medium text-gray-500 uppercase dark:text-neutral-500">Бонус</th>
+                    class="px-6 py-3 text-start text-xs font-medium uppercase text-gray-500">Бонус</th>
             </tr>
         </thead>
         <tbody class="divide-y divide-gray-200">
@@ -162,32 +162,29 @@
 
 <h1 class="mt-[20px] mb-[10px] font-bold text-[18px]">Список водителей</h1>
 <div class="p-2 bg-white rounded-md shadow-lg">
-    <table class="table-auto w-full divide-y divide-gray-200">
+    <table class="w-full divide-y divide-gray-200">
         <thead>
             <tr>
                 <th scope="col"
-                    class="px-6 py-3 text-start text-xs font-medium text-gray-500 uppercase dark:text-neutral-500">Имя пользователя</th>
+                    class="px-6 py-3 text-start text-xs font-medium uppercase text-gray-500">Имя пользователя</th>
                 <th scope="col"
-                    class="px-6 py-3 text-start text-xs font-medium text-gray-500 uppercase dark:text-neutral-500">Имя
+                    class="px-6 py-3 text-start text-xs font-medium uppercase text-gray-500">Имя
                 </th>
                 <th scope="col"
-                    class="px-6 py-3 text-start text-xs font-medium text-gray-500 uppercase dark:text-neutral-500">
+                    class="px-6 py-3 text-start text-xs font-medium uppercase text-gray-500">
                     Фамилия
                 </th>
                 <th scope="col"
-                    class="px-6 py-3 text-start text-xs font-medium text-gray-500 uppercase dark:text-neutral-500">Номер
+                    class="px-6 py-3 text-start text-xs font-medium uppercase text-gray-500">Номер
                     телефона</th>
                 <th scope="col"
-                    class="px-6 py-3 text-start text-xs font-medium text-gray-500 uppercase dark:text-neutral-500">
-                    Пассажиров</th>
-                <th scope="col"
-                    class="px-6 py-3 text-start text-xs font-medium text-gray-500 uppercase dark:text-neutral-500">
+                    class="px-6 py-3 text-start text-xs font-medium uppercase text-gray-500">
                     Присоединился в</th>
                     <th scope="col"
-                    class="px-6 py-3 text-start text-xs font-medium text-gray-500 uppercase dark:text-neutral-500">
+                    class="px-6 py-3 text-start text-xs font-medium uppercase text-gray-500">
                     Баланс</th>
                 <th scope="col"
-                    class="px-6 py-3 text-start text-xs font-medium text-gray-500 uppercase dark:text-neutral-500">
+                    class="px-6 py-3 text-start text-xs font-medium uppercase text-gray-500">
                     Статус</th>
             </tr>
         </thead>
@@ -198,15 +195,14 @@
             <tr>
                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-blue-300 underline"><a
                         href="{% url 'driver_details' driver.pk %}">{{ driver.driver }}</a></td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-800">{{ driver.driver.first_name }}</td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-800">{{ driver.driver.last_name }}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-800">{{ driver.driver.first_name|truncatechars:15 }}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-800">{{ driver.driver.last_name|truncatechars:15 }}</td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-800">{{ driver.driver.phone_number }}</td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-800">{{ driver.passengers }}</td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-800">{{ driver.joined_at }}</td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-800">{{ driver.driver.balance }}</td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-800">
                     <span class="text-[10px] px-[7px] py-[2px] rounded-full {% if driver.status %}bg-green-400{% else %}bg-red-500{% endif %} text-white font-semibold">
-                        {% if driver.status %}Онлайн{% else %}Офлайн{% endif %}
+                        {% if driver.status %}Активен{% else %}Не активен{% endif %}
                     </span>
                 </td>
             </tr>

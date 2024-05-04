@@ -31,7 +31,7 @@ class Line(models.Model):
         default=0,
     )
     joined_at = models.DateTimeField(auto_now_add=True)
-    status = models.BooleanField(default=True)
+    status = models.BooleanField(default=False)
 
     class Meta:
         ordering = ['joined_at',]

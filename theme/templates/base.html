@@ -15,7 +15,7 @@
 	<body>
 		<main class="flex flex-row">
 			<aside
-				class="flex flex-col w-64 h-screen px-4 py-8 overflow-y-auto border-r rtl:border-r-0 rtl:border-l bg-gray-900 border-gray-700 sticky top-0">
+				class="flex flex-col h-screen w-64 px-4 py-8 overflow-y-auto border-r rtl:border-r-0 rtl:border-l bg-gray-900 border-gray-700 sticky top-0">
 				<a href="{% url "index" %}" class="flex justify-center">
 					<img class="w-auto h-6 sm:h-7" src="{% static "logo.png" %}" alt="">
 				</a>
@@ -75,19 +75,21 @@
 						</a>
 					</nav>
 
-					<span href="#" class="flex items-center px-4 -mx-2">
-						<svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 0 24 24" fill="none"
-							stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-							<path d="M5.52 19c.64-2.2 1.84-3 3.22-3h6.52c1.38 0 2.58.8 3.22 3" />
-							<circle cx="12" cy="10" r="3" />
-							<circle cx="12" cy="12" r="10" />
-						</svg>
-						<span class="mx-2 font-medium text-gray-800 dark:text-gray-200">{{ request.user }}</span>
-					</span>
+					<div class="flex justify-center">
+						<span href="#" class="flex items-center px-4 -mx-2">
+							<svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 0 24 24" fill="none"
+								stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+								<path d="M5.52 19c.64-2.2 1.84-3 3.22-3h6.52c1.38 0 2.58.8 3.22 3" />
+								<circle cx="12" cy="10" r="3" />
+								<circle cx="12" cy="12" r="10" />
+							</svg>
+							<span class="mx-2 font-medium text-gray-800 dark:text-gray-200">{{ request.user }}</span>
+						</span>
+					</div>
 				</div>
 			</aside>
 
-			<div class="p-3 px-7 w-[100%]">
+			<div class="p-3 px-7" style="width: calc(100% - 256px);">
 				{% block content %}
 				{% endblock %}
 			</div>

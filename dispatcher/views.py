@@ -1,7 +1,8 @@
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import authenticate, login, logout, get_user_model
-from django.db.models import F
+from django.contrib import messages
+from django.contrib.auth.decorators import user_passes_test
 from decimal import Decimal
 
 from orders.models import Order, Client
@@ -12,24 +13,25 @@ from dispatcher.forms import RegisterDriverForm, DriverChangeForm
 User = get_user_model()
 
 
-@login_required
+@user_passes_test(lambda u: u.is_staff, login_url='login/')
 def index(request):
     orders = Order.objects.all()
     clients = Client.objects.all()
-    drivers = Line.objects.all().order_by('-status', 'joined_at')
+    drivers_user = Line.objects.all().order_by('-status', '-joined_at')
+
 
     context = {
         'orders_quantity': orders.count(),
-        'drivers_quantity': drivers.count(),
+        'drivers_quantity': drivers_user.count(),
         'clients_quantity': clients.count(),
         'orders_list': orders,
-        'drivers_list': drivers,
+        'drivers_list': drivers_user,
     }
 
     return render(request, 'dispatcher/index.html', context)
 
 
-@login_required
+@user_passes_test(lambda u: u.is_staff, login_url='login/')
 def orders(request):
     if request.method == 'POST':
         try:
@@ -43,6 +45,7 @@ def orders(request):
                 to_city=request.POST.get('to_city'),
                 passengers=request.POST.get('passengers'),
                 address=request.POST.get('address'),
+                is_driver=True
             )
 
             return render(request, 'dispatcher/orders.html', {'message': 'Заявка создана'})
@@ -52,28 +55,38 @@ def orders(request):
     return render(request, 'dispatcher/orders.html')
 
 
-@login_required
+@user_passes_test(lambda u: u.is_staff, login_url='login/')
 def drivers(request):
     if request.method == 'POST':
-        form = RegisterDriverForm(request.POST, request.FILES)
+        if User.objects.filter(username=request.POST.get('username')).exists():
+            messages.error(request, 'Пользователь с таким именем уже существует.')
 
-        if form.is_valid():
-            form.save()
-            return redirect('drivers')
-    else:
-        form = RegisterDriverForm()
+            return render(request, 'dispatcher/drivers.html')
 
-    return render(request, 'dispatcher/drivers.html', {'form': form})
+        try:
+            user = User.objects.create_user(
+                username=request.POST.get('username'),
+                first_name=request.POST.get('first_name'),
+                last_name=request.POST.get('last_name'),
+                password=request.POST.get('password'),
+                phone_number=request.POST.get('phone_number')
+            )
+            Line.objects.create(driver=user, from_city='NK', to_city='SB')
+
+            return redirect('index')
+        except Exception as e:
+            messages.error(request, 'Произошла ошибка. Попробуйте еще раз')
+
+    return render(request, 'dispatcher/drivers.html')
 
 
-@login_required
+@user_passes_test(lambda u: u.is_staff, login_url='login/')
 def driver_details(request, pk):
     driver = Line.objects.get(pk=pk)
 
     if request.method == 'POST':
         form = DriverChangeForm(
             data=request.POST, instance=driver.driver, files=request.FILES)
-        print(request.POST)
 
         if form.is_valid():
             form.save()
@@ -84,10 +97,16 @@ def driver_details(request, pk):
     return render(request, 'dispatcher/driver_details.html', {'form': form, 'driver': driver.driver})
 
 
-@login_required
+@user_passes_test(lambda u: u.is_staff, login_url='login/')
 def add_balance(request, pk):
     if request.method == 'POST':
-        Line.objects.filter(pk=pk).update(driver__balance=F('driver__balance') + Decimal(request.POST.get('balance')))
+        try:
+            driver = User.objects.get(pk=pk)
+            driver.balance += Decimal(request.POST.get('balance'))
+
+            driver.save()
+        except Exception as e:
+            print(e)
 
     return redirect('index')
 
@@ -107,6 +126,7 @@ def user_login(request):
         return render(request, 'dispatcher/login.html')
 
 
+@login_required
 def user_logout(request):
     logout(request)
     return redirect('login')
