@@ -1,37 +1,58 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
+from django.views.generic import ListView
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import authenticate, login, logout, get_user_model
 from django.contrib import messages
-from django.contrib.auth.decorators import user_passes_test
+from django.contrib.admin.views.decorators import staff_member_required
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from decimal import Decimal
 
+from dispatcher.forms import DriverChangeForm, PricingForm
+from dispatcher.models import Pricing
 from orders.models import Order, Client
 from line.models import Line
-from dispatcher.forms import RegisterDriverForm, DriverChangeForm
 
 
 User = get_user_model()
 
 
-@user_passes_test(lambda u: u.is_staff, login_url='login/')
+@staff_member_required(login_url='login/')
 def index(request):
-    orders = Order.objects.all()
-    clients = Client.objects.all()
-    drivers_user = Line.objects.all().order_by('-status', '-joined_at')
+    orders_list = Order.objects.all()
+    drivers_list = Line.objects.order_by('-status', '-joined_at')
 
+    orders_page = request.GET.get('orders_page')
+    drivers_page = request.GET.get('drivers_page')
+
+    orders_paginator = Paginator(orders_list, 1)
+    drivers_paginator = Paginator(drivers_list, 1)
+
+    try:
+        orders_page = orders_paginator.page(orders_page)
+    except PageNotAnInteger:
+        orders_page = orders_paginator.page(1)
+    except EmptyPage:
+        orders_page = orders_paginator.page(orders_paginator.num_pages)
+
+    try:
+        drivers_page = drivers_paginator.page(drivers_page)
+    except PageNotAnInteger:
+        drivers_page = drivers_paginator.page(1)
+    except EmptyPage:
+        drivers_page = drivers_paginator.page(drivers_paginator.num_pages)
 
     context = {
-        'orders_quantity': orders.count(),
-        'drivers_quantity': drivers_user.count(),
-        'clients_quantity': clients.count(),
-        'orders_list': orders,
-        'drivers_list': drivers_user,
+        'orders_quantity': orders_paginator.count,
+        'drivers_quantity': drivers_paginator.count,
+        'clients_quantity': Client.objects.count(),
+        'orders_list': orders_page,
+        'drivers_list': drivers_page,
     }
 
     return render(request, 'dispatcher/index.html', context)
 
 
-@user_passes_test(lambda u: u.is_staff, login_url='login/')
+@staff_member_required(login_url='login/')
 def orders(request):
     if request.method == 'POST':
         try:
@@ -39,27 +60,53 @@ def orders(request):
                 phone_number=request.POST.get('phone_number')
             )
 
+            if created:
+                client.balance += 10000
+                client.save()
+
             Order.objects.create(
                 client=client,
                 from_city=request.POST.get('from_city'),
                 to_city=request.POST.get('to_city'),
                 passengers=request.POST.get('passengers'),
                 address=request.POST.get('address'),
-                is_driver=True
             )
 
             return render(request, 'dispatcher/orders.html', {'message': 'Заявка создана'})
-        except:
+        except Exception as e:
+            print(e)
             return render(request, 'dispatcher/orders.html', {'error': 'Произошла ошибка. Попробуйте еще раз.'})
 
     return render(request, 'dispatcher/orders.html')
 
 
-@user_passes_test(lambda u: u.is_staff, login_url='login/')
+staff_member_required(login_url='login/')
+def order_details(request, pk):
+    client = get_object_or_404(Order, pk=pk).client
+
+    if request.method == 'POST':
+        amount = Decimal(request.POST.get('amount'))
+
+        if amount > client.balance:
+            messages.error(
+                request, f'Недостаточно средств. Текущий баланс: {client.balance}')
+        else:
+            client.balance -= amount
+            client.save()
+            messages.success(
+                request, f'Баланс клиента "{client}" успешно изменено.')
+
+            return redirect('index')
+
+    return render(request, 'dispatcher/order_details.html', {'client': client})
+
+
+@staff_member_required(login_url='login/')
 def drivers(request):
     if request.method == 'POST':
         if User.objects.filter(username=request.POST.get('username')).exists():
-            messages.error(request, 'Пользователь с таким именем уже существует.')
+            messages.error(
+                request, 'Пользователь с таким именем уже существует.')
 
             return render(request, 'dispatcher/drivers.html')
 
@@ -69,7 +116,8 @@ def drivers(request):
                 first_name=request.POST.get('first_name'),
                 last_name=request.POST.get('last_name'),
                 password=request.POST.get('password'),
-                phone_number=request.POST.get('phone_number')
+                phone_number=request.POST.get('phone_number'),
+                is_driver=True
             )
             Line.objects.create(driver=user, from_city='NK', to_city='SB')
 
@@ -80,7 +128,7 @@ def drivers(request):
     return render(request, 'dispatcher/drivers.html')
 
 
-@user_passes_test(lambda u: u.is_staff, login_url='login/')
+@staff_member_required(login_url='login/')
 def driver_details(request, pk):
     driver = Line.objects.get(pk=pk)
 
@@ -97,7 +145,7 @@ def driver_details(request, pk):
     return render(request, 'dispatcher/driver_details.html', {'form': form, 'driver': driver.driver})
 
 
-@user_passes_test(lambda u: u.is_staff, login_url='login/')
+@staff_member_required(login_url='login/')
 def add_balance(request, pk):
     if request.method == 'POST':
         try:
@@ -109,6 +157,23 @@ def add_balance(request, pk):
             print(e)
 
     return redirect('index')
+
+
+@staff_member_required(login_url='login/')
+def pricing(request):
+    pricing = Pricing.get_singleton()
+
+    if request.method == 'POST':
+        form = PricingForm(request.POST, instance=pricing)
+
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Данные успешно изменены.')
+            return redirect('index')
+    else:
+        form = PricingForm(instance=pricing)
+
+    return render(request, 'dispatcher/pricing.html', {'pricing': pricing, 'form': form})
 
 
 def user_login(request):
@@ -133,4 +198,30 @@ def user_logout(request):
 
 
 def page_not_found_view(request, exception):
+    return redirect('index')
+
+
+@staff_member_required(login_url='login/')
+def block_driver(request, pk):
+    try:
+        driver = get_object_or_404(User, pk=pk)
+        driver.is_active = False
+        driver.save(update_fields=['is_active'])
+    except:
+        messages.error(request, 'Произошла ошибка. Попробуйте еще раз.')
+
+    messages.success(request, f'Водитель "{driver}" заблокирован.')
+    return redirect('index')
+
+
+@staff_member_required(login_url='login/')
+def unblock_driver(request, pk):
+    try:
+        driver = get_object_or_404(User, pk=pk)
+        driver.is_active = True
+        driver.save(update_fields=['is_active'])
+    except:
+        messages.error(request, 'Произошла ошибка. Попробуйте еще раз.')
+
+    messages.success(request, f'Водитель "{driver}" разблокирован.')
     return redirect('index')

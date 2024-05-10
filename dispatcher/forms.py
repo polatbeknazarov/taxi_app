@@ -2,6 +2,8 @@ from django import forms
 from django.contrib.auth import get_user_model
 from django.contrib.auth.forms import UserChangeForm
 
+from dispatcher.models import Pricing
+
 
 User = get_user_model()
 
@@ -20,3 +22,9 @@ class DriverChangeForm(UserChangeForm):
         model = User
         fields = ('username', 'first_name', 'last_name',
                   'phone_number', 'passport',)
+        
+
+class PricingForm(forms.ModelForm):
+    class Meta:
+        model = Pricing
+        fields = '__all__'

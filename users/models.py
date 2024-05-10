@@ -22,5 +22,6 @@ class CustomUser(AbstractUser):
         default=0,
     )
     passport = models.ImageField(upload_to='images/', blank=True)
+    car_brand = models.CharField(max_length=50, blank=False)
+    car_number = models.CharField(max_length=20, blank=False)
     is_driver = models.BooleanField(default=False)
-    is_dispatcher = models.BooleanField(default=False)

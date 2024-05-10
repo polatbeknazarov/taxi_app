@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+
+{% block title %}1S. TAXI - Создание заявки{% endblock title %}
+
+{% block content %}
+<div>
+    <h1 class="my-[10px] font-bold text-[18px]">Изменение баланса клиента</h1>
+    <ul class="my-[10px] text-sm">
+        <li>
+            <span class="font-semibold">Клиент:</span> {{ client.phone_number }}
+        </li>
+        <li>
+            <span class="font-semibold">Баланс:</span> {{ client.balance }}
+        </li>
+    </ul>
+
+    <form method="post">
+        {% csrf_token %}
+        <label for="amount" class="block text-sm font-medium text-gray-900">Введите сумму</label>
+        <input type="number" name="amount" id="amount" placeholder="Введите сумму для уменьшения баланса"
+            class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
+        <button type="submit"
+            class="text-white mt-[20px] bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center">Сохранить</button>
+    </form>
+    {% if messages %}
+    <ul class="text-red-500 mt-[20px] text-sm">
+        {% for message in messages %}
+        <li>{{ message }}</li>
+        {% endfor %}
+    </ul>
+    {% endif %}
+</div>
+{% endblock %}

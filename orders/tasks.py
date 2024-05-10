@@ -40,8 +40,18 @@ def send_order(order_id, from_city, to_city):
                 }
             )
 
-        time.sleep(15)
-        order.refresh_from_db()
+            time.sleep(15)
+            order.refresh_from_db()
+
+    if order.in_search:
+        for line in lines:
+            async_to_sync(channel_layer.group_send)(
+                line.driver.username,
+                {
+                    'type': 'send_message',
+                    'message': json.dumps({'free_order': data})
+                }
+            )
 
 
 @app.task

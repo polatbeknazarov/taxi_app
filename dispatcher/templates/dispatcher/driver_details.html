@@ -6,6 +6,7 @@
 
 <h1 class="my-[10px] font-bold text-[18px]">Редактирование водителя</h1>
 
+{% if driver.is_active %}
 <form method="post" enctype="multipart/form-data">
     {% csrf_token %}
     <div class="grid gap-6 mb-6 md:grid-cols-2">
@@ -76,7 +77,21 @@
     <button type="submit"
         class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center">Изменить</button>
 </form>
+{% else %}
+<div class="text-center my-10">
+    <span class="text-red-500 font-bold">Пользователь заблокирован</span>
+</div>
+{% endif %}
 
+<div class="mt-[10px]">
+    {% if driver.is_active %}
+    <a href="{% url "block_driver" driver.pk %}" class="text-sm text-red-400 font-semibold">Заблокировать пользователя</a>
+    {% else %}
+    <a href="{% url "unblock_driver" driver.pk %}" class="text-sm text-green-400 font-semibold">Разблокировать пользователя</a>
+    {% endif %}
+</div>
+
+{% if driver.is_active %}
 <h1 class="mb-[10px] mt-[20px] font-bold text-[18px]">Пополнить баланс водителя</h1>
 
 <form action="{% url "add_balance" driver.pk %}" method="post">
@@ -88,5 +103,6 @@
     <button type="submit"
         class="text-white mt-[20px] bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center">Пополнить</button>
 </form>
+{% endif %}
 
 {% endblock content %}

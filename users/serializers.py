@@ -61,8 +61,8 @@ class CustomUserSerializer(DjoserUserSerializer):
             'phone_number',
             'balance',
             'passengers_count',
-            'is_driver',
-            'is_dispatcher',
+            'car_number',
+            'car_brand',
         )
 
     def get_passengers_count(self, obj):
