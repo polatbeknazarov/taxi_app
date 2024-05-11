@@ -7,52 +7,160 @@
 <h1 class="my-[10px] font-bold text-[18px]">Регистрация водителя</h1>
 
 
-{% comment %} <form method="post" enctype="multipart/form-data">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit">Register</button>
-</form> {% endcomment %}
-
-
 <form method="post" enctype="multipart/form-data">
     {% csrf_token %}
     <div class="grid gap-6 mb-6 md:grid-cols-2">
         <div>
             <label for="first_name" class="block mb-2 text-sm font-medium text-gray-900">Имя</label>
-            <input name="first_name" type="text" id="first_name" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5" placeholder="Введите имя" required />
+            <input name="first_name" type="text" id="first_name"
+                class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
+                placeholder="Введите имя" required />
         </div>
         <div>
             <label for="last_name" class="block mb-2 text-sm font-medium text-gray-900">Фамилия</label>
-            <input name="last_name" type="text" id="last_name" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5" placeholder="Введите фамилию" required />
+            <input name="last_name" type="text" id="last_name"
+                class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
+                placeholder="Введите фамилию" required />
         </div>
         <div>
             <label for="username" class="block mb-2 text-sm font-medium text-gray-900">Имя пользователя</label>
-            <input name="username" type="text" id="username" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5" placeholder="Введите имя пользователя" required />
-        </div>  
+            <input name="username" type="text" id="username"
+                class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
+                placeholder="Введите имя пользователя" required />
+        </div>
         <div>
             <label for="phone" class="block mb-2 text-sm font-medium text-gray-900">Номер телефона</label>
-            <input name="phone_number" type="tel" id="phone" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5" placeholder="Введите номер телефона. Например: +998933640767" pattern="^\+?\d{12}$" title="Введите корректный номер телефона (например: +998933640767)" required />
+            <input name="phone_number" type="tel" id="phone"
+                class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
+                placeholder="Введите номер телефона. Например: +998933640767" pattern="^\+?\d{12}$"
+                title="Введите корректный номер телефона (например: +998933640767)" required />
+        </div>
+        <div>
+            <label for="car_number" class="block mb-2 text-sm font-medium text-gray-900">Номер машины</label>
+            <input name="car_number" type="text" id="car_number"
+                class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
+                placeholder="Введите номер машины. Например: 95X717XX" required />
+        </div>
+        <div>
+            <label for="car_brand" class="block mb-2 text-sm font-medium text-gray-900">Марка машины</label>
+            <input name="car_brand" type="text" id="car_brand"
+                class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
+                placeholder="Введите марку машины" required />
         </div>
     </div>
     <label class="block mb-2 text-sm font-medium text-gray-900" for="default_size">Добавьте изображение</label>
-    <input name="passport" class="block w-full mb-5 p-2.5 text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50" id="default_size" type="file" accept="image/*">
+    <input name="passport"
+        class="block w-full mb-5 p-2.5 text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50"
+        id="default_size" type="file" accept="image/*">
     <div class="mb-6">
         <label for="password" class="block mb-2 text-sm font-medium text-gray-900">Пароль</label>
-        <input name="password" type="password" id="password" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5" placeholder="Введите пароль" required />
-    </div> 
+        <input name="password" type="password" id="password"
+            class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
+            placeholder="Введите пароль" required />
+    </div>
     <div class="mb-6">
         <label for="confirm_password" class="block mb-2 text-sm font-medium text-gray-900">Потдвердите пароль</label>
-        <input name="confirm_password" type="password" id="confirm_password" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5" placeholder="Потдвердите пароль" required />
-    </div> 
-    <button type="submit" class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center">Сохранить</button>
+        <input name="confirm_password" type="password" id="confirm_password"
+            class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
+            placeholder="Потдвердите пароль" required />
+    </div>
+    <button type="submit"
+        class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center">Сохранить</button>
 </form>
 
-{% if messages %}
-    <ul class="text-red-500">
-        {% for message in messages %}
-            <li>{{ message }}</li>
-        {% endfor %}
-    </ul>
-{% endif %}
+<h1 class="mt-[20px] mb-[10px] font-bold text-[18px]">Список водителей</h1>
+<div class="p-2 bg-white rounded-md shadow-lg mt-[20px]">
+    <table class="w-full divide-y divide-gray-200">
+        <thead>
+            <tr>
+                <th scope="col" class="px-6 py-3 text-start text-xs font-medium uppercase text-gray-500">Имя
+                    пользователя</th>
+                <th scope="col" class="px-6 py-3 text-start text-xs font-medium uppercase text-gray-500">Имя
+                </th>
+                <th scope="col" class="px-6 py-3 text-start text-xs font-medium uppercase text-gray-500">
+                    Фамилия
+                </th>
+                <th scope="col" class="px-6 py-3 text-start text-xs font-medium uppercase text-gray-500">Номер
+                    телефона</th>
+                <th scope="col" class="px-6 py-3 text-start text-xs font-medium uppercase text-gray-500">
+                    Присоединился в</th>
+                <th scope="col" class="px-6 py-3 text-start text-xs font-medium uppercase text-gray-500">
+                    Баланс</th>
+                <th scope="col" class="px-6 py-3 text-start text-xs font-medium uppercase text-gray-500">
+                    Статус</th>
+            </tr>
+        </thead>
+        <tbody class="divide-y divide-gray-200">
+
+            {% if drivers_list %}
+            {% for driver in drivers_list %}
+            <tr>
+                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-blue-300 underline"><a
+                        href="{% url 'driver_details' driver.pk %}">{{ driver.driver }}</a></td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-800">{{ driver.driver.first_name|truncatechars:15 }}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-800">{{ driver.driver.last_name|truncatechars:15 }}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-800">{{ driver.driver.phone_number }}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-800">{{ driver.joined_at|date:"d.m.Y, H:i" }}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-800">{{ driver.driver.balance }}
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-800">
+                    <span
+                        class="text-[10px] px-[7px] py-[2px] rounded-full {% if driver.status %}bg-green-400{% else %}bg-red-500{% endif %} text-white font-semibold">
+                        {% if driver.status %}Активен{% else %}Не активен{% endif %}
+                    </span>
+                </td>
+            </tr>
+            {% endfor %}
+            {% else %}
+            <tr>
+                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-blue-300 underline">
+                    Список пуст
+                </td>
+            </tr>
+            {% endif %}
+        </tbody>
+    </table>
+
+    {% if drivers_list.paginator.num_pages > 1 %}
+    <nav class="w-full" aria-label="Page navigation example">
+        <ul class="flex items-center justify-center mt-4 -space-x-px h-8 text-sm">
+            <!-- Кнопка "Предыдущая страница" -->
+            <li>
+                <a href="{% if drivers_list.has_previous %}?page={{ drivers_list.previous_page_number }}{% endif %}"
+                    class="flex items-center justify-center px-3 h-8 ms-0 leading-tight text-gray-500 bg-white border border-e-0 border-gray-300 rounded-s-lg hover:bg-gray-100 hover:text-gray-700">
+                    <span class="sr-only">Previous</span>
+                    <svg class="w-2.5 h-2.5 rtl:rotate-180" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"
+                        fill="none" viewBox="0 0 6 10">
+                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M5 1 1 5l4 4" />
+                    </svg>
+                </a>
+            </li>
+
+            <!-- Цикл для отображения номеров страниц -->
+            {% for page_num in drivers_list.paginator.page_range %}
+            <li>
+                <a href="?page={{ page_num }}"
+                    class="flex items-center justify-center px-3 h-8 leading-tight border border-gray-300 hover:bg-gray-100 hover:text-gray-700 {% if page_num == drivers_list.number %}text-blue-600 border-blue-300 bg-blue-50 hover:bg-blue-100 hover:text-blue-700{% endif %}">{{ page_num }}</a>
+            </li>
+            {% endfor %}
+
+            <!-- Кнопка "Следующая страница" -->
+            <li>
+                <a href="{% if drivers_list.has_next %}?page={{ drivers_list.next_page_number }}{% endif %}"
+                    class="flex items-center justify-center px-3 h-8 leading-tight text-gray-500 bg-white border border-gray-300 rounded-e-lg hover:bg-gray-100 hover:text-gray-700 ">
+                    <span class="sr-only">Next</span>
+                    <svg class="w-2.5 h-2.5 rtl:rotate-180" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"
+                        fill="none" viewBox="0 0 6 10">
+                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="m1 9 4-4-4-4" />
+                    </svg>
+                </a>
+            </li>
+        </ul>
+    </nav>
+    {% endif %}
+
+</div>
 
 {% endblock content %}

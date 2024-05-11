@@ -1,13 +1,6 @@
 {% extends "base.html" %}
 
 {% block content %}
-{% if messages %}
-    {% for message in messages %}
-    <div class="p-4 mb-4 text-sm rounded-lg bg-gray-900 {% if message.tags == 'success' %}text-green-400{% else %}text-red-400{% endif %}" role="alert">
-        <span class="font-medium">{{ message }}</span>
-    </div>
-    {% endfor %}
-{% endif %}
 <h1 class="my-[10px] font-bold text-[18px]">Общая статистика</h1>
 
 <div class="grid grid-cols-3 gap-[10px]">
@@ -71,7 +64,7 @@
 </div>
 
 
-<h1 class="mt-[20px] mb-[10px] font-bold text-[18px]">Список заявок</h1>
+<h1 class="mt-[20px] mb-[10px] font-bold text-[18px]">Список свободных заявок</h1>
 <div class="p-2 bg-white rounded-md shadow-lg mb-[20px]">
     <table class="table-auto w-full divide-y divide-gray-200">
         <thead>
@@ -99,10 +92,15 @@
                     <a href="{% url "order_details" order.pk %}" class="whitespace-nowrap text-sm font-medium text-blue-300 underline">{{ order.client}}</a>
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-800">{{ order.passengers }}</td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-800">{{ order.from_city }}</td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-800">{{ order.to_city }}</td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-800">{{ order.created_at }}</td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-800">{{ order.in_search }}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-800">{% if order.from_city == 'NK' %}Нукус{% else %}Шымбай{% endif %}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-800">{% if order.to_city == 'NK' %}Нукус{% else %}Шымбай{% endif %}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-800">{{ order.created_at|date:"d.m.Y, H:i" }}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-800">
+                    <span
+                        class="text-[10px] px-[7px] py-[2px] rounded-full {% if order.in_search %}bg-green-400{% endif %} text-white font-semibold">
+                        {% if order.in_search %}Идет поиск водителя{% endif %}
+                    </span>
+                </td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-800">{{ order.client.balance }}
                 </td>
             </tr>
@@ -154,7 +152,7 @@
     {% endif %}
 </div>
 
-<h1 class="mt-[20px] mb-[10px] font-bold text-[18px]">Список водителей</h1>
+<h1 class="mt-[20px] mb-[10px] font-bold text-[18px]">Список водителей в очереди</h1>
 <div class="p-2 bg-white rounded-md shadow-lg">
     <table class="w-full divide-y divide-gray-200">
         <thead>
@@ -186,7 +184,7 @@
                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-800">{{ driver.driver.first_name|truncatechars:15 }}</td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-800">{{ driver.driver.last_name|truncatechars:15 }}</td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-800">{{ driver.driver.phone_number }}</td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-800">{{ driver.joined_at }}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-800">{{ driver.joined_at|date:"d.m.Y, H:i" }}</td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-800">{{ driver.driver.balance }}
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-800">
@@ -226,7 +224,12 @@
             <!-- Цикл для отображения номеров страниц -->
             {% for page_num in drivers_list.paginator.page_range %}
             <li>
-                <a href="?page={{ page_num }}" class="flex items-center justify-center px-3 h-8 leading-tight border border-gray-300 hover:bg-gray-100 hover:text-gray-700 {% if page_num == drivers_list.number %}text-blue-600 border-blue-300 bg-blue-50 hover:bg-blue-100 hover:text-blue-700{% endif %}">{{ page_num }}</a>
+                <a 
+                    href="?page={{ page_num }}" 
+                    class="flex items-center justify-center px-3 h-8 leading-tight border border-gray-300 hover:bg-gray-100 hover:text-gray-700 {% if page_num == drivers_list.number %}text-blue-600 border-blue-300 bg-blue-50 hover:bg-blue-100 hover:text-blue-700{% endif %}"
+                >
+                    {{ page_num }}
+                </a>
             </li>
             {% endfor %}
     

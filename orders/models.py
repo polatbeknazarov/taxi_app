@@ -55,6 +55,7 @@ class Order(models.Model):
     )
     address = models.TextField(blank=False)
     in_search = models.BooleanField(default=True)
+    is_free = models.BooleanField(default=False)
     driver = models.ForeignKey(
         CustomUser,
         on_delete=models.CASCADE,
@@ -87,4 +88,4 @@ def order_post_save(sender, instance, created, **kwargs):
         from_city=instance.from_city,
         to_city=instance.to_city,
     )
-    send_message.delay(phone_number=instance.client.phone_number)
+    # send_message.delay(phone_number=instance.client.phone_number)

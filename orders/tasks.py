@@ -44,6 +44,8 @@ def send_order(order_id, from_city, to_city):
             order.refresh_from_db()
 
     if order.in_search:
+        order.is_free = True
+        order.save()
         for line in lines:
             async_to_sync(channel_layer.group_send)(
                 line.driver.username,

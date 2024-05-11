@@ -102,6 +102,14 @@
 			</aside>
 
 			<div class="p-3 px-7" style="width: calc(100% - 256px);">
+				{% if messages %}
+					{% for message in messages %}
+					<div class="p-4 mb-4 text-sm rounded-lg bg-gray-900 {% if message.tags == 'success' %}text-green-400{% else %}text-red-400{% endif %}" role="alert">
+						<span class="font-medium">{{ message }}</span>
+					</div>
+					{% endfor %}
+				{% endif %}
+
 				{% block content %}
 				{% endblock %}
 			</div>

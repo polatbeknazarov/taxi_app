@@ -1,9 +1,8 @@
 from django.urls import path
 
-from orders.views import OrderAPIView, OrdersHistoryList, CurrentPassengersAPIView
+from orders.views import OrdersHistoryList, LastPassengersAPIView
 
 urlpatterns = [
-    path('orders/', OrderAPIView.as_view()),
     path('orders/history/', OrdersHistoryList.as_view()),
-    path('orders/current/', CurrentPassengersAPIView.as_view()),
+    path('orders/current/', LastPassengersAPIView.as_view()),
 ]

@@ -48,7 +48,6 @@ class LineConsumer(AsyncWebsocketConsumer):
 
     async def receive(self, text_data):
         data = json.loads(text_data)
-        print(data)
 
         if data['type'] == 'accept':
             await self._handle_accept_order(data)
@@ -59,6 +58,7 @@ class LineConsumer(AsyncWebsocketConsumer):
     async def _send_line_to_driver(self):
         line = await sync_to_async(Line.objects.filter)(status=True, from_city=self.from_city, to_city=self.to_city)
         data = await sync_to_async(self._serialize_line)(line)
+        free_orders = await sync_to_async(Order.objects.filter(is_free=True, in_search=True))
 
         for driver in line:
             await self.channel_layer.group_send(
@@ -67,7 +67,18 @@ class LineConsumer(AsyncWebsocketConsumer):
                     'type': 'send_message',
                     'message': json.dumps(
                         {
-                            'line': data
+                            'line': data,
+                        }
+                    ),
+                },
+            )
+            await self.channel_layer.group_send(
+                driver.driver.username,
+                {
+                    'type': 'send_message',
+                    'message': json.dumps(
+                        {
+                            'free_orders': free_orders,
                         }
                     ),
                 },
@@ -147,7 +158,12 @@ class LineConsumer(AsyncWebsocketConsumer):
         order.driver = self.user
 
         order.in_search = False
-        client.balance = F('balance') + pricing.order_bonus
+
+        if Order.objects.filter(client=client).count() == 1:
+            client.balance = F('balance') + float(10000)
+        else:
+            client.balance = F('balance') + pricing.order_bonus
+
         driver.passengers += order.passengers
         user.balance = F('balance') - price
 

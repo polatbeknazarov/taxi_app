@@ -18,35 +18,15 @@ User = get_user_model()
 
 @staff_member_required(login_url='login/')
 def index(request):
-    orders_list = Order.objects.all()
-    drivers_list = Line.objects.order_by('-status', '-joined_at')
-
-    orders_page = request.GET.get('orders_page')
-    drivers_page = request.GET.get('drivers_page')
-
-    orders_paginator = Paginator(orders_list, 1)
-    drivers_paginator = Paginator(drivers_list, 1)
-
-    try:
-        orders_page = orders_paginator.page(orders_page)
-    except PageNotAnInteger:
-        orders_page = orders_paginator.page(1)
-    except EmptyPage:
-        orders_page = orders_paginator.page(orders_paginator.num_pages)
-
-    try:
-        drivers_page = drivers_paginator.page(drivers_page)
-    except PageNotAnInteger:
-        drivers_page = drivers_paginator.page(1)
-    except EmptyPage:
-        drivers_page = drivers_paginator.page(drivers_paginator.num_pages)
+    orders_list = Order.objects.filter(in_search=True).order_by('-created_at')
+    drivers_list = Line.objects.filter(status=True).order_by('-status', '-joined_at')
 
     context = {
-        'orders_quantity': orders_paginator.count,
-        'drivers_quantity': drivers_paginator.count,
+        'orders_quantity': orders_list.count,
+        'drivers_quantity': drivers_list.count,
         'clients_quantity': Client.objects.count(),
-        'orders_list': orders_page,
-        'drivers_list': drivers_page,
+        'orders_list': orders_list,
+        'drivers_list': drivers_list,
     }
 
     return render(request, 'dispatcher/index.html', context)
@@ -54,15 +34,20 @@ def index(request):
 
 @staff_member_required(login_url='login/')
 def orders(request):
+    orders_list = Order.objects.all().order_by('-created_at')
+    paginator = Paginator(orders_list, 10)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
     if request.method == 'POST':
         try:
             client, created = Client.objects.get_or_create(
                 phone_number=request.POST.get('phone_number')
             )
 
-            if created:
-                client.balance += 10000
-                client.save()
+            # if created:
+            #     client.balance += 10000
+            #     client.save()
 
             Order.objects.create(
                 client=client,
@@ -72,12 +57,13 @@ def orders(request):
                 address=request.POST.get('address'),
             )
 
-            return render(request, 'dispatcher/orders.html', {'message': 'Заявка создана'})
+            messages.success(request, 'Заявка создана')
+            return render(request, 'dispatcher/orders.html')
         except Exception as e:
-            print(e)
-            return render(request, 'dispatcher/orders.html', {'error': 'Произошла ошибка. Попробуйте еще раз.'})
+            messages.error(request, f'Произошла ошибка. Попробуйте еще раз.\n\n{e}')
+            return render(request, 'dispatcher/orders.html')
 
-    return render(request, 'dispatcher/orders.html')
+    return render(request, 'dispatcher/orders.html', {'orders_list': page_obj})
 
 
 staff_member_required(login_url='login/')
@@ -103,6 +89,11 @@ def order_details(request, pk):
 
 @staff_member_required(login_url='login/')
 def drivers(request):
+    drivers = Line.objects.all().order_by('-joined_at')
+    paginator = Paginator(drivers, 10)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
     if request.method == 'POST':
         if User.objects.filter(username=request.POST.get('username')).exists():
             messages.error(
@@ -117,15 +108,18 @@ def drivers(request):
                 last_name=request.POST.get('last_name'),
                 password=request.POST.get('password'),
                 phone_number=request.POST.get('phone_number'),
+                car_number=request.POST.get('car_number'),
+                car_brand=request.POST.get('car_brand'),
                 is_driver=True
             )
+
             Line.objects.create(driver=user, from_city='NK', to_city='SB')
 
-            return redirect('index')
+            messages.success(request, 'Водитель успешно создан.')
         except Exception as e:
             messages.error(request, 'Произошла ошибка. Попробуйте еще раз')
 
-    return render(request, 'dispatcher/drivers.html')
+    return render(request, 'dispatcher/drivers.html', {'drivers_list': page_obj})
 
 
 @staff_member_required(login_url='login/')
@@ -138,7 +132,10 @@ def driver_details(request, pk):
 
         if form.is_valid():
             form.save()
+            messages.success(request, 'Данные успешно изменены.')
             return redirect('index')
+        else:
+            messages.error(request, 'Произошла ошибка. Попробуйте еще раз')
     else:
         form = DriverChangeForm(instance=driver.driver)
 
