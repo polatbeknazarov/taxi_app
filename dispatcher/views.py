@@ -19,7 +19,8 @@ User = get_user_model()
 @staff_member_required(login_url='login/')
 def index(request):
     orders_list = Order.objects.filter(in_search=True).order_by('-created_at')
-    drivers_list = Line.objects.filter(status=True).order_by('-status', '-joined_at')
+    drivers_list = Line.objects.filter(
+        status=True).order_by('-status', '-joined_at')
 
     context = {
         'orders_quantity': orders_list.count(),
@@ -57,13 +58,16 @@ def orders(request):
             messages.success(request, 'Заявка создана')
             return render(request, 'dispatcher/orders.html')
         except Exception as e:
-            messages.error(request, f'Произошла ошибка. Попробуйте еще раз.\n\n{e}')
+            messages.error(
+                request, f'Произошла ошибка. Попробуйте еще раз.\n\n{e}')
             return render(request, 'dispatcher/orders.html')
 
     return render(request, 'dispatcher/orders.html', {'orders_list': page_obj})
 
 
 staff_member_required(login_url='login/')
+
+
 def order_details(request, pk):
     client = get_object_or_404(Order, pk=pk).client
 
@@ -90,7 +94,7 @@ def drivers(request):
     paginator = Paginator(drivers, 10)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
-    
+
     if request.method == 'POST':
         form = RegisterDriverForm(request.POST, request.FILES)
 
@@ -136,9 +140,10 @@ def add_balance(request, pk):
             driver.balance += Decimal(request.POST.get('balance'))
 
             driver.save()
-            messages.success('Данные успешно изменены.')
+            messages.success(request, 'Данные успешно изменены.')
         except Exception as e:
-            messages.error(f'Произошла ошибка. Попробуйте еще раз. {e}')
+            messages.error(
+                request, f'Произошла ошибка. Попробуйте еще раз. {e}')
 
     return redirect('index')
 

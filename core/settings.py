@@ -11,13 +11,13 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = os.environ.get('SECRET_KEY')
 
-DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = ['*']
 
 CORS_ALLOW_ALL_ORIGINS = True
 CORS_ORIGIN_ALLOW_ALL = True
-CSRF_TRUSTED_ORIGINS = ["https://1s-taxi.uz", "https://www.1s-taxi.uz"]
+CSRF_TRUSTED_ORIGINS = ['https://1s-taxi.uz', 'https://www.1s-taxi.uz']
 
 
 INSTALLED_APPS = [
@@ -131,7 +131,7 @@ CHANNEL_LAYERS = {
     'default': {
         'BACKEND': 'channels_redis.core.RedisChannelLayer',
         'CONFIG': {
-            'hosts': [('redis', 6379)],
+            'hosts': [('redis://:1445464_redis@redis:6379/0')],
         },
     },
 }
