@@ -6,15 +6,19 @@ from line.models import Line
 class LineSerializer(serializers.ModelSerializer):
     first_name = serializers.SerializerMethodField()
     last_name = serializers.SerializerMethodField()
+    username = serializers.SerializerMethodField()
     car_number = serializers.SerializerMethodField()
+    car_brand = serializers.SerializerMethodField()
 
     class Meta:
         model = Line
         fields = (
             'id',
-            'car_number',
+            'username',
             'first_name',
             'last_name',
+            'car_number',
+            'car_brand',
             'passengers',
             'joined_at',
         )
@@ -25,5 +29,11 @@ class LineSerializer(serializers.ModelSerializer):
     def get_last_name(self, obj):
         return obj.driver.last_name
 
-    def get_car_number(self, obj):
+    def get_username(self, obj):
         return obj.driver.username
+
+    def get_car_number(self, obj):
+        return obj.driver.car_number
+
+    def get_car_brand(self, obj):
+        return obj.driver.car_brand

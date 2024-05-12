@@ -10,6 +10,7 @@ from channels.generic.websocket import AsyncWebsocketConsumer
 from line.models import Line
 from line.serializers import LineSerializer
 from orders.models import Order, OrdersHistory, Client
+from orders.serializers import OrderSerializer
 from dispatcher.models import Pricing
 
 
@@ -58,7 +59,8 @@ class LineConsumer(AsyncWebsocketConsumer):
     async def _send_line_to_driver(self):
         line = await sync_to_async(Line.objects.filter)(status=True, from_city=self.from_city, to_city=self.to_city)
         data = await sync_to_async(self._serialize_line)(line)
-        free_orders = await sync_to_async(Order.objects.filter(is_free=True, in_search=True))
+        free_orders = await sync_to_async(Order.objects.filter)(is_free=True, in_search=True)
+        free_orders_data = await sync_to_async(self._serialize_free_orders)(free_orders)
 
         for driver in line:
             await self.channel_layer.group_send(
@@ -78,7 +80,7 @@ class LineConsumer(AsyncWebsocketConsumer):
                     'type': 'send_message',
                     'message': json.dumps(
                         {
-                            'free_orders': free_orders,
+                            'free_orders': free_orders_data,
                         }
                     ),
                 },
@@ -107,16 +109,16 @@ class LineConsumer(AsyncWebsocketConsumer):
             line_obj = await sync_to_async(Line.objects.get)(driver=self.user)
 
             await sync_to_async(Line.objects.filter(pk=line_obj.pk).update)(
-                from_city=self.from_city, 
-                to_city=self.to_city, 
-                status=True, 
-                joined_at=datetime.utcnow(), 
+                from_city=self.from_city,
+                to_city=self.to_city,
+                status=True,
+                joined_at=datetime.utcnow(),
                 passengers=0,
             )
         except ObjectDoesNotExist:
             await sync_to_async(Line.objects.create)(
-                driver=self.user, 
-                from_city=self.from_city, 
+                driver=self.user,
+                from_city=self.from_city,
                 to_city=self.to_city,
             )
 
@@ -125,12 +127,17 @@ class LineConsumer(AsyncWebsocketConsumer):
         await sync_to_async(Line.objects.filter(pk=line_obj.pk).update)(status=False)
 
         await self.channel_layer.group_discard(
-            self.username, 
+            self.username,
             self.channel_name,
         )
 
     def _serialize_line(self, line):
         serializer = LineSerializer(line, many=True)
+
+        return serializer.data
+
+    def _serialize_free_orders(self, free_order):
+        serializer = OrderSerializer(free_order, many=True)
 
         return serializer.data
 
@@ -159,7 +166,9 @@ class LineConsumer(AsyncWebsocketConsumer):
 
         order.in_search = False
 
-        if Order.objects.filter(client=client).count() == 1:
+        count = await sync_to_async(Order.objects.filter(client=client).count)()
+
+        if count == 1:
             client.balance = F('balance') + float(10000)
         else:
             client.balance = F('balance') + pricing.order_bonus

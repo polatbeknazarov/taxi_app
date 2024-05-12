@@ -1,14 +1,15 @@
 from django import forms
 from django.contrib.auth import get_user_model
-from django.contrib.auth.forms import UserChangeForm
+from django.contrib.auth.forms import UserChangeForm, UserCreationForm
 
 from dispatcher.models import Pricing
+from orders.models import Order
 
 
 User = get_user_model()
 
 
-class RegisterDriverForm(forms.ModelForm):
+class RegisterDriverForm(UserCreationForm):
     class Meta:
         model = User
         fields = (
@@ -17,8 +18,9 @@ class RegisterDriverForm(forms.ModelForm):
             'last_name',
             'phone_number',
             'passport',
+            'car_number',
+            'car_brand',
             'is_driver',
-            'password',
         )
 
 

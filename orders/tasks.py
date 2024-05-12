@@ -44,14 +44,17 @@ def send_order(order_id, from_city, to_city):
             order.refresh_from_db()
 
     if order.in_search:
-        order.is_free = True
-        order.save()
+        Order.objects.filter(pk=order.pk).update(is_free=True)
+
+        free_orders = Order.objects.filter(is_free=True)
+        free_orders_data = OrderSerializer(free_orders, many=True)
+
         for line in lines:
             async_to_sync(channel_layer.group_send)(
                 line.driver.username,
                 {
                     'type': 'send_message',
-                    'message': json.dumps({'free_order': data})
+                    'message': json.dumps({'free_orders': free_orders_data.data})
                 }
             )
 

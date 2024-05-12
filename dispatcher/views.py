@@ -1,13 +1,13 @@
 from django.shortcuts import render, redirect, get_object_or_404
-from django.views.generic import ListView
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import authenticate, login, logout, get_user_model
 from django.contrib import messages
 from django.contrib.admin.views.decorators import staff_member_required
-from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+from django.core.paginator import Paginator
 from decimal import Decimal
 
-from dispatcher.forms import DriverChangeForm, PricingForm
+from dispatcher.forms import DriverChangeForm, PricingForm, RegisterDriverForm
+from django.contrib.auth.forms import UserCreationForm
 from dispatcher.models import Pricing
 from orders.models import Order, Client
 from line.models import Line
@@ -22,8 +22,8 @@ def index(request):
     drivers_list = Line.objects.filter(status=True).order_by('-status', '-joined_at')
 
     context = {
-        'orders_quantity': orders_list.count,
-        'drivers_quantity': drivers_list.count,
+        'orders_quantity': orders_list.count(),
+        'drivers_quantity': drivers_list.count(),
         'clients_quantity': Client.objects.count(),
         'orders_list': orders_list,
         'drivers_list': drivers_list,
@@ -35,6 +35,7 @@ def index(request):
 @staff_member_required(login_url='login/')
 def orders(request):
     orders_list = Order.objects.all().order_by('-created_at')
+
     paginator = Paginator(orders_list, 10)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
@@ -44,10 +45,6 @@ def orders(request):
             client, created = Client.objects.get_or_create(
                 phone_number=request.POST.get('phone_number')
             )
-
-            # if created:
-            #     client.balance += 10000
-            #     client.save()
 
             Order.objects.create(
                 client=client,
@@ -78,10 +75,9 @@ def order_details(request, pk):
                 request, f'Недостаточно средств. Текущий баланс: {client.balance}')
         else:
             client.balance -= amount
-            client.save()
-            messages.success(
-                request, f'Баланс клиента "{client}" успешно изменено.')
+            client.save(update_fields=['balance'])
 
+            messages.success(request, f'Баланс успешно изменено.')
             return redirect('index')
 
     return render(request, 'dispatcher/order_details.html', {'client': client})
@@ -90,34 +86,24 @@ def order_details(request, pk):
 @staff_member_required(login_url='login/')
 def drivers(request):
     drivers = Line.objects.all().order_by('-joined_at')
+
     paginator = Paginator(drivers, 10)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
-
+    
     if request.method == 'POST':
-        if User.objects.filter(username=request.POST.get('username')).exists():
-            messages.error(
-                request, 'Пользователь с таким именем уже существует.')
+        form = RegisterDriverForm(request.POST, request.FILES)
 
-            return render(request, 'dispatcher/drivers.html')
-
-        try:
-            user = User.objects.create_user(
-                username=request.POST.get('username'),
-                first_name=request.POST.get('first_name'),
-                last_name=request.POST.get('last_name'),
-                password=request.POST.get('password'),
-                phone_number=request.POST.get('phone_number'),
-                car_number=request.POST.get('car_number'),
-                car_brand=request.POST.get('car_brand'),
-                is_driver=True
-            )
-
+        if form.is_valid():
+            user = form.save(commit=False)
+            user.is_driver = True
+            user.save()
             Line.objects.create(driver=user, from_city='NK', to_city='SB')
 
             messages.success(request, 'Водитель успешно создан.')
-        except Exception as e:
-            messages.error(request, 'Произошла ошибка. Попробуйте еще раз')
+            return redirect('index')
+        else:
+            messages.error(request, form.errors)
 
     return render(request, 'dispatcher/drivers.html', {'drivers_list': page_obj})
 
@@ -150,8 +136,9 @@ def add_balance(request, pk):
             driver.balance += Decimal(request.POST.get('balance'))
 
             driver.save()
+            messages.success('Данные успешно изменены.')
         except Exception as e:
-            print(e)
+            messages.error(f'Произошла ошибка. Попробуйте еще раз. {e}')
 
     return redirect('index')
 
