@@ -9,6 +9,7 @@ urlpatterns = [
     path('drivers/', views.drivers, name='drivers'),
     path('drivers/<int:pk>/edit/', views.driver_details, name='driver_details'),
     path('drivers/<int:pk>/add_balance/', views.add_balance, name='add_balance'),
+    path('drivers/<int:pk>/minus_balance/', views.minus_balance, name='minus_balance'),
     path('drivers/<int:pk>/block/', views.block_driver, name='block_driver'),
     path('drivers/<int:pk>/unblock/', views.unblock_driver, name='unblock_driver'),
 

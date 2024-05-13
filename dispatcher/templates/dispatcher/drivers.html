@@ -12,38 +12,38 @@
     <div class="grid gap-6 mb-6 md:grid-cols-2">
         <div>
             <label for="first_name" class="block mb-2 text-sm font-medium text-gray-900">Имя</label>
-            <input name="first_name" type="text" id="first_name"
+            <input name="first_name" type="text" id="first_name" value="{% if form.first_name.value %}{{ form.first_name.value }}{% endif %}"
                 class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
                 placeholder="Введите имя" required />
         </div>
         <div>
             <label for="last_name" class="block mb-2 text-sm font-medium text-gray-900">Фамилия</label>
-            <input name="last_name" type="text" id="last_name"
+            <input name="last_name" type="text" id="last_name" value="{% if form.last_name.value %}{{ form.last_name.value }}{% endif %}"
                 class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
                 placeholder="Введите фамилию" required />
         </div>
         <div>
             <label for="username" class="block mb-2 text-sm font-medium text-gray-900">Имя пользователя</label>
-            <input name="username" type="text" id="username"
+            <input name="username" type="text" id="username" value="{% if form.username.value %}{{ form.username.value }}{% endif %}"
                 class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
                 placeholder="Введите имя пользователя" required />
         </div>
         <div>
             <label for="phone" class="block mb-2 text-sm font-medium text-gray-900">Номер телефона</label>
-            <input name="phone_number" type="tel" id="phone"
+            <input name="phone_number" type="tel" id="phone" value="{% if form.phone_number.value %}{{ form.phone_number.value }}{% endif %}"
                 class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
                 placeholder="Введите номер телефона. Например: +998933640767" pattern="^\+?\d{12}$"
                 title="Введите корректный номер телефона (например: +998933640767)" required />
         </div>
         <div>
             <label for="car_number" class="block mb-2 text-sm font-medium text-gray-900">Номер машины</label>
-            <input name="car_number" type="text" id="car_number"
+            <input name="car_number" type="text" id="car_number" value="{% if form.car_number.value %}{{ form.car_number.value }}{% endif %}"
                 class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
                 placeholder="Введите номер машины. Например: 95X717XX" required />
         </div>
         <div>
             <label for="car_brand" class="block mb-2 text-sm font-medium text-gray-900">Марка машины</label>
-            <input name="car_brand" type="text" id="car_brand"
+            <input name="car_brand" type="text" id="car_brand" value="{% if form.car_brand.value %}{{ form.car_brand.value }}{% endif %}"
                 class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
                 placeholder="Введите марку машины" required />
         </div>

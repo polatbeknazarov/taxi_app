@@ -7,7 +7,6 @@ from django.core.paginator import Paginator
 from decimal import Decimal
 
 from dispatcher.forms import DriverChangeForm, PricingForm, RegisterDriverForm
-from django.contrib.auth.forms import UserCreationForm
 from dispatcher.models import Pricing
 from orders.models import Order, Client
 from line.models import Line
@@ -56,11 +55,10 @@ def orders(request):
             )
 
             messages.success(request, 'Заявка создана')
-            return render(request, 'dispatcher/orders.html')
+            return redirect('index')
         except Exception as e:
             messages.error(
                 request, f'Произошла ошибка. Попробуйте еще раз.\n\n{e}')
-            return render(request, 'dispatcher/orders.html')
 
     return render(request, 'dispatcher/orders.html', {'orders_list': page_obj})
 
@@ -108,8 +106,10 @@ def drivers(request):
             return redirect('index')
         else:
             messages.error(request, form.errors)
+    else:
+        form = RegisterDriverForm()
 
-    return render(request, 'dispatcher/drivers.html', {'drivers_list': page_obj})
+    return render(request, 'dispatcher/drivers.html', {'drivers_list': page_obj, 'form': form})
 
 
 @staff_member_required(login_url='login/')
@@ -138,6 +138,22 @@ def add_balance(request, pk):
         try:
             driver = User.objects.get(pk=pk)
             driver.balance += Decimal(request.POST.get('balance'))
+
+            driver.save()
+            messages.success(request, 'Данные успешно изменены.')
+        except Exception as e:
+            messages.error(
+                request, f'Произошла ошибка. Попробуйте еще раз. {e}')
+
+    return redirect('index')
+
+
+@staff_member_required(login_url='login/')
+def minus_balance(request, pk):
+    if request.method == 'POST':
+        try:
+            driver = User.objects.get(pk=pk)
+            driver.balance -= Decimal(request.POST.get('balance'))
 
             driver.save()
             messages.success(request, 'Данные успешно изменены.')

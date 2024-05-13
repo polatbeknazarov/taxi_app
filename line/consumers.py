@@ -112,7 +112,6 @@ class LineConsumer(AsyncWebsocketConsumer):
                 from_city=self.from_city,
                 to_city=self.to_city,
                 status=True,
-                joined_at=datetime.utcnow(),
                 passengers=0,
             )
         except ObjectDoesNotExist:
@@ -165,6 +164,7 @@ class LineConsumer(AsyncWebsocketConsumer):
         order.driver = self.user
 
         order.in_search = False
+        order.is_free = False
 
         count = await sync_to_async(Order.objects.filter(client=client).count)()
 

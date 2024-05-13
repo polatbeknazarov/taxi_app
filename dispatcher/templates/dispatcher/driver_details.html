@@ -111,7 +111,19 @@
         class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
         placeholder="Введите сумму" required />
     <button type="submit"
-        class="text-white mt-[20px] bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center">Пополнить</button>
+        class="text-white mt-[20px] bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center">Сохранить</button>
+</form>
+
+<h1 class="mb-[10px] mt-[20px] font-bold text-[18px]">Вычесть из баланса водителя</h1>
+
+<form action="{% url "minus_balance" driver.pk %}" method="post">
+    {% csrf_token %}
+    <label for="balance" class="block mb-2 text-sm font-medium text-gray-900">Сумма вычисления</label>
+    <input type="number" id="balance" min="1000" name="balance"
+        class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
+        placeholder="Введите сумму" required />
+    <button type="submit"
+        class="text-white mt-[20px] bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center">Сохранить</button>
 </form>
 {% endif %}
 
