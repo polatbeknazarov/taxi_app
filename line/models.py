@@ -30,7 +30,7 @@ class Line(models.Model):
         ],
         default=0,
     )
-    joined_at = models.DateTimeField(auto_now_add=True)
+    joined_at = models.DateTimeField(auto_now=True)
     status = models.BooleanField(default=False)
 
     class Meta:

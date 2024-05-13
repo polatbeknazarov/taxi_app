@@ -1,9 +1,9 @@
 version: '3.8'
 x-enviroment-defaults: &enviroment-defaults
   DEBUG: "True"
-  DB_NAME: "taxi_app"
-  DB_USER: "root"
-  DB_PASSWORD: "root"
+  DB_NAME: "taxi_api_db"
+  DB_USER: "taxi_api"
+  DB_PASSWORD: "taxi_api_1445464"
   DB_HOST: "postgres"
   DB_PORT: 5432
   CELERY_BROKER_URL: "redis://:1445464_redis@redis:6379"
@@ -15,9 +15,9 @@ services:
     image: postgres:latest
     container_name: postgres
     environment:
-      POSTGRES_DB: taxi_app
-      POSTGRES_USER: root
-      POSTGRES_PASSWORD: root
+      POSTGRES_DB: taxi_api_db
+      POSTGRES_USER: taxi_api
+      POSTGRES_PASSWORD: taxi_api_1445464
     ports:
       - "5432:5432"
     networks:

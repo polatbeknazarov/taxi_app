@@ -108,12 +108,12 @@ class LineConsumer(AsyncWebsocketConsumer):
         try:
             line_obj = await sync_to_async(Line.objects.get)(driver=self.user)
 
-            await sync_to_async(Line.objects.filter(pk=line_obj.pk).update)(
-                from_city=self.from_city,
-                to_city=self.to_city,
-                status=True,
-                passengers=0,
-            )
+            line_obj.from_city = self.from_city
+            line_obj.to_city = self.to_city
+            line_obj.status = True
+            line_obj.passengers = 0
+
+            await sync_to_async(line_obj.save)()
         except ObjectDoesNotExist:
             await sync_to_async(Line.objects.create)(
                 driver=self.user,
@@ -161,40 +161,40 @@ class LineConsumer(AsyncWebsocketConsumer):
             )
             return
 
-        order.driver = self.user
+        if order.in_search:
+            order.driver = self.user
 
-        order.in_search = False
-        order.is_free = False
+            order.in_search = False
+            order.is_free = False
 
-        count = await sync_to_async(Order.objects.filter(client=client).count)()
+            count = await sync_to_async(Order.objects.filter(client=client).count)()
 
-        if count == 1:
-            client.balance = F('balance') + float(10000)
-        else:
-            client.balance = F('balance') + pricing.order_bonus
+            if count == 1:
+                client.balance = F('balance') + float(10000)
+            else:
+                client.balance = F('balance') + pricing.order_bonus
 
-        driver.passengers += order.passengers
-        user.balance = F('balance') - price
+            user.balance = F('balance') - price
 
-        await sync_to_async(driver.save)()
-        await sync_to_async(client.save)()
-        await sync_to_async(order.save)()
-        await sync_to_async(user.save)()
+            await sync_to_async(Line.objects.filter(driver=self.user).update)(passengers=F('passengers') + order.passengers)
+            await sync_to_async(client.save)()
+            await sync_to_async(order.save)()
+            await sync_to_async(user.save)()
 
-        await sync_to_async(OrdersHistory.objects.create)(driver=self.user, order=order)
+            await sync_to_async(OrdersHistory.objects.create)(driver=self.user, order=order)
 
-        if driver.passengers == 4:
-            await self._completed_driver()
+            if driver.passengers == 4:
+                await self._completed_driver()
 
-        await self._send_line_to_driver()
+            await self._send_line_to_driver()
 
-        await self.channel_layer.group_send(
-            self.username,
-            {
-                'type': 'send_message',
-                'message': json.dumps({'type': 'accepted', 'order_id': order_id}),
-            },
-        )
+            await self.channel_layer.group_send(
+                self.username,
+                {
+                    'type': 'send_message',
+                    'message': json.dumps({'type': 'accepted', 'order_id': order_id}),
+                },
+            )
 
     async def _handle_join_line(self, data):
         price = await sync_to_async(Pricing.get_singleton)()

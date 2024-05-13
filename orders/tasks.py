@@ -43,6 +43,15 @@ def send_order(order_id, from_city, to_city):
             time.sleep(15)
             order.refresh_from_db()
 
+            if order.in_search:
+                async_to_sync(channel_layer.group_send)(
+                    line.driver.username,
+                    {
+                        'type': 'send_message',
+                        'message': json.dumps({'type': 'canceled'}),
+                    }
+                )
+
     if order.in_search:
         Order.objects.filter(pk=order.pk).update(is_free=True)
 
