@@ -81,11 +81,10 @@ class OrdersHistory(models.Model):
 
 @receiver(post_save, sender=Order)
 def order_post_save(sender, instance, created, **kwargs):
-    from orders.tasks import send_order, send_message
+    from orders.tasks import send_order
 
     send_order.delay(
         order_id=instance.id,
         from_city=instance.from_city,
         to_city=instance.to_city,
     )
-    # send_message.delay(phone_number=instance.client.phone_number)

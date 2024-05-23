@@ -62,4 +62,4 @@ CMD python manage.py makemigrations \
     && python manage.py tailwind start \
     && gunicorn --bind 0.0.0.0:8000 core.wsgi:application & \
     daphne -b 0.0.0.0 -p 8001 core.asgi:application & \
-    celery -A core worker --loglevel=info
+    celery -A core worker --concurrency=1 --loglevel=info

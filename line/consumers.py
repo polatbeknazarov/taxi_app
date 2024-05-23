@@ -11,6 +11,7 @@ from line.models import Line
 from line.serializers import LineSerializer
 from orders.models import Order, OrdersHistory, Client
 from orders.serializers import OrderSerializer
+from orders.tasks import send_sms
 from dispatcher.models import Pricing
 
 
@@ -59,7 +60,12 @@ class LineConsumer(AsyncWebsocketConsumer):
     async def _send_line_to_driver(self):
         line = await sync_to_async(Line.objects.filter)(status=True, from_city=self.from_city, to_city=self.to_city)
         data = await sync_to_async(self._serialize_line)(line)
-        free_orders = await sync_to_async(Order.objects.filter)(is_free=True, in_search=True)
+        free_orders = await sync_to_async(Order.objects.filter)(
+            from_city=self.from_city,
+            to_city=self.to_city,
+            is_free=True,
+            in_search=True,
+        )
         free_orders_data = await sync_to_async(self._serialize_free_orders)(free_orders)
 
         for driver in line:
@@ -174,10 +180,15 @@ class LineConsumer(AsyncWebsocketConsumer):
             else:
                 client.balance = F('balance') + pricing.order_bonus
 
+            driver.passengers += order.passengers
             user.balance = F('balance') - price
 
-            await sync_to_async(Line.objects.filter(driver=self.user).update)(passengers=F('passengers') + order.passengers)
+            await sync_to_async(driver.save)(update_fields=['passengers',])
             await sync_to_async(client.save)()
+
+            await sync_to_async(client.refresh_from_db)()
+            client_balance_value = client.balance
+            await sync_to_async(send_sms.delay)(phone_number=client.phone_number, balance=client_balance_value)
             await sync_to_async(order.save)()
             await sync_to_async(user.save)()
 

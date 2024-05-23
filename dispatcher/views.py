@@ -18,12 +18,14 @@ User = get_user_model()
 @staff_member_required(login_url='login/')
 def index(request):
     orders_list = Order.objects.filter(in_search=True).order_by('-created_at')
+    all_orders = Order.objects.count()
+    all_drivers = Line.objects.count()
     drivers_list = Line.objects.filter(
         status=True).order_by('-status', '-joined_at')
 
     context = {
-        'orders_quantity': orders_list.count(),
-        'drivers_quantity': drivers_list.count(),
+        'orders_quantity': all_orders,
+        'drivers_quantity': all_drivers,
         'clients_quantity': Client.objects.count(),
         'orders_list': orders_list,
         'drivers_list': drivers_list,
@@ -97,8 +99,11 @@ def drivers(request):
         form = RegisterDriverForm(request.POST, request.FILES)
 
         if form.is_valid():
+            get_car_number = request.POST.get('car_number')
+            car_number = get_car_number.replace(" ", "").upper()
             user = form.save(commit=False)
             user.is_driver = True
+            user.car_number = car_number
             user.save()
             Line.objects.create(driver=user, from_city='NK', to_city='SB')
 

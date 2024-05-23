@@ -1,24 +1,8 @@
-import os
 import requests
-
-from dotenv import load_dotenv
-
-load_dotenv()
-
-SUCCESS = 200
-PROCESSING = 102
-FAILED = 400
-INVALID_NUMBER = 160
-MESSAGE_IS_EMPTY = 170
-SMS_NOT_FOUND = 404
-SMS_SERVICE_NOT_TURNED = 600
-
-ESKIZ_EMAIL = os.getenv('ESKIZ_EMAIL')
-ESKIZ_SECRET_KEY = os.getenv('ESKIZ_SECRET_KEY')
 
 
 class SendSmsWithEskizApi:
-    def __init__(self, message, phone, email=ESKIZ_EMAIL, password=ESKIZ_SECRET_KEY):
+    def __init__(self, message, phone, email='polatbekbeknazarov2003@gmail.com', password='S97ac7SfrA73BY7Ta1pFAJqJrrYyE1y96Qmj8JJ0'):
         self.message = message
         self.phone = phone
         self.spend = None
@@ -33,17 +17,13 @@ class SendSmsWithEskizApi:
         AUTHORIZATION_URL = 'http://notify.eskiz.uz/api/auth/login'
 
         r = requests.request('POST', AUTHORIZATION_URL, data=data)
+        token = r.json()['data']['token']
 
-        if r.json()['data']['token']:
-            return r.json()['data']['token']
-        else:
-            return FAILED
+        return token
 
     def send_message(self):
         token = self.authorization()
-
-        if token == FAILED:
-            return FAILED
+        print(self.message)
 
         SEND_SMS_URL = "http://notify.eskiz.uz/api/message/sms/send"
         PAYLOAD = {
