@@ -1,6 +1,5 @@
 import json
 
-from datetime import datetime
 from asgiref.sync import sync_to_async
 from django.db.models import F
 from django.contrib.auth import get_user_model
@@ -37,16 +36,17 @@ class LineConsumer(AsyncWebsocketConsumer):
         await self.accept()
 
     async def disconnect(self, code):
-        try:
-            line_obj = await sync_to_async(Line.objects.get)(driver=self.user)
-            await sync_to_async(Line.objects.filter(pk=line_obj.pk).update)(status=False)
+        pass
+        # try:
+        #     line_obj = await sync_to_async(Line.objects.get)(driver=self.user)
+        #     await sync_to_async(Line.objects.filter(pk=line_obj.pk).update)(status=False)
 
-            await self.channel_layer.group_discard(
-                self.username, self.channel_name
-            )
-            await self._send_line_disconnect()
-        except Exception as e:
-            print(e)
+        #     await self.channel_layer.group_discard(
+        #         self.username, self.channel_name
+        #     )
+        #     await self._send_line_disconnect()
+        # except Exception as e:
+        #     print(e)
 
     async def receive(self, text_data):
         data = json.loads(text_data)
@@ -56,6 +56,9 @@ class LineConsumer(AsyncWebsocketConsumer):
 
         if data['type'] == 'join_line':
             await self._handle_join_line(data)
+
+        if data['type'] == 'disconnect':
+            await self._leave_line()
 
     async def _send_line_to_driver(self):
         line = await sync_to_async(Line.objects.filter)(status=True, from_city=self.from_city, to_city=self.to_city)
@@ -92,6 +95,15 @@ class LineConsumer(AsyncWebsocketConsumer):
                 },
             )
 
+    async def _leave_line(self):
+        line_obj = await sync_to_async(Line.objects.get)(driver=self.user)
+        await sync_to_async(Line.objects.filter(pk=line_obj.pk).update)(status=False)
+
+        await self.channel_layer.group_discard(
+            self.username, self.channel_name
+        )
+        await self._send_line_disconnect()
+
     async def _send_line_disconnect(self):
         try:
             line = await sync_to_async(Line.objects.filter)(status=True, from_city=self.from_city, to_city=self.to_city)
@@ -114,12 +126,13 @@ class LineConsumer(AsyncWebsocketConsumer):
         try:
             line_obj = await sync_to_async(Line.objects.get)(driver=self.user)
 
-            line_obj.from_city = self.from_city
-            line_obj.to_city = self.to_city
-            line_obj.status = True
-            line_obj.passengers = 0
+            if not line_obj.status:
+                line_obj.from_city = self.from_city
+                line_obj.to_city = self.to_city
+                line_obj.status = True
+                line_obj.passengers = 0
 
-            await sync_to_async(line_obj.save)()
+                await sync_to_async(line_obj.save)()
         except ObjectDoesNotExist:
             await sync_to_async(Line.objects.create)(
                 driver=self.user,

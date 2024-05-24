@@ -7,7 +7,7 @@ from django.core.paginator import Paginator
 from decimal import Decimal
 
 from dispatcher.forms import DriverChangeForm, PricingForm, RegisterDriverForm
-from dispatcher.models import Pricing
+from dispatcher.models import Pricing, DriverBalanceHistory
 from orders.models import Order, Client
 from line.models import Line
 
@@ -141,10 +141,13 @@ def driver_details(request, pk):
 def add_balance(request, pk):
     if request.method == 'POST':
         try:
+            amount = Decimal(request.POST.get('balance'))
             driver = User.objects.get(pk=pk)
-            driver.balance += Decimal(request.POST.get('balance'))
+            driver.balance += amount
 
             driver.save()
+            DriverBalanceHistory.objects.create(
+                driver=driver, amount=amount, transaction='+')
             messages.success(request, 'Данные успешно изменены.')
         except Exception as e:
             messages.error(
@@ -157,10 +160,13 @@ def add_balance(request, pk):
 def minus_balance(request, pk):
     if request.method == 'POST':
         try:
+            amount = Decimal(request.POST.get('balance'))
             driver = User.objects.get(pk=pk)
-            driver.balance -= Decimal(request.POST.get('balance'))
+            driver.balance -= amount
 
             driver.save()
+            DriverBalanceHistory.objects.create(
+                driver=driver, amount=amount, transaction='-')
             messages.success(request, 'Данные успешно изменены.')
         except Exception as e:
             messages.error(
@@ -184,6 +190,16 @@ def pricing(request):
         form = PricingForm(instance=pricing)
 
     return render(request, 'dispatcher/pricing.html', {'pricing': pricing, 'form': form})
+
+
+@staff_member_required(login_url='login/')
+def history(request):
+    data_list = DriverBalanceHistory.objects.all()
+    paginator = Paginator(data_list, 30)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
+    return render(request, 'dispatcher/history.html', {'data': page_obj})
 
 
 def user_login(request):
