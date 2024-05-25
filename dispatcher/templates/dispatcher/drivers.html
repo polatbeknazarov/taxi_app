@@ -64,6 +64,10 @@
             class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
             placeholder="Потдвердите пароль" required />
     </div>
+    <div class="flex items-center mb-4">
+        <input type="checkbox" id="togglePasswordCheckbox" class="shrink-0 rounded text-blue-600 focus:ring-blue-500 border-neutral-700 checked:bg-blue-500 checked:border-blue-500 focus:ring-offset-gray-800">
+        <label for="hs-toggle-password-checkbox" class="text-sm ml-[10px]">Показать пароль</label>
+    </div>
     <button type="submit"
         class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center">Сохранить</button>
 </form>
@@ -166,3 +170,20 @@
 </div>
 
 {% endblock content %}
+
+{% block script %}
+<script>
+    document.getElementById('togglePasswordCheckbox').addEventListener('change', function() {
+        const password1 = document.getElementById('password1');
+        const password2 = document.getElementById('password2');
+        
+        if (this.checked) {
+            password1.type = 'text';
+            password2.type = 'text';
+        } else {
+            password1.type = 'password';
+            password2.type = 'password';
+        }
+    });
+</script>
+{% endblock script %}
