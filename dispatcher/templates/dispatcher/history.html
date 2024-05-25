@@ -26,7 +26,7 @@ Saqiy Taxi - История
                     <a href="{% url 'driver_details' i.driver.pk %}">{{ i.driver }}</a>
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium {% if i.transaction == '+' %}text-green-500{% else %}text-red-500{% endif %}">{{i.transaction}}{{ i.amount }}</td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-800">{{ i.created_at }}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-800">{{ i.created_at|date:"d.m.Y, H:i" }}</td>
             </tr>
             {% endfor %}
             {% else %}

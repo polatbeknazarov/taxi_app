@@ -20,15 +20,18 @@ def index(request):
     orders_list = Order.objects.filter(in_search=True).order_by('-created_at')
     all_orders = Order.objects.count()
     all_drivers = Line.objects.count()
-    drivers_list = Line.objects.filter(
-        status=True).order_by('-status', '-joined_at')
+    drivers_list_nk = Line.objects.filter(
+        status=True, from_city='NK').order_by('-status', '-joined_at')
+    drivers_list_sb = Line.objects.filter(
+        status=True, from_city='SB').order_by('-status', '-joined_at')
 
     context = {
         'orders_quantity': all_orders,
         'drivers_quantity': all_drivers,
         'clients_quantity': Client.objects.count(),
         'orders_list': orders_list,
-        'drivers_list': drivers_list,
+        'drivers_list_nk': drivers_list_nk,
+        'drivers_list_sb': drivers_list_sb,
     }
 
     return render(request, 'dispatcher/index.html', context)
@@ -89,7 +92,7 @@ def order_details(request, pk):
 
 @staff_member_required(login_url='login/')
 def drivers(request):
-    drivers = Line.objects.all().order_by('-joined_at')
+    drivers = Line.objects.all().order_by('-created_at')
 
     paginator = Paginator(drivers, 10)
     page_number = request.GET.get('page')
@@ -194,7 +197,7 @@ def pricing(request):
 
 @staff_member_required(login_url='login/')
 def history(request):
-    data_list = DriverBalanceHistory.objects.all()
+    data_list = DriverBalanceHistory.objects.all().order_by('-created_at')
     paginator = Paginator(data_list, 30)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)

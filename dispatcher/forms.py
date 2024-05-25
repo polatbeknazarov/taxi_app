@@ -40,6 +40,11 @@ class RegisterDriverForm(UserCreationForm):
 
         return last_name.title()
 
+    def clean_car_brand(self):
+        car_brand = self.cleaned_data['car_brand']
+
+        return car_brand.title()
+
 
 class DriverChangeForm(UserChangeForm):
     passport = forms.ImageField(required=False)

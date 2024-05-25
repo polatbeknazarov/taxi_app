@@ -12,7 +12,8 @@ class Line(models.Model):
         ('SB', 'Шымбай'),
     ]
 
-    driver = models.ForeignKey(User, on_delete=models.CASCADE, related_name='driver_lines')
+    driver = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name='driver_lines')
     from_city = models.CharField(
         max_length=2,
         choices=CITY_CHOICES,
@@ -31,6 +32,7 @@ class Line(models.Model):
         default=0,
     )
     joined_at = models.DateTimeField(auto_now=True)
+    created_at = models.DateTimeField(auto_now_add=True)
     status = models.BooleanField(default=False)
 
     class Meta:

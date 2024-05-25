@@ -78,10 +78,7 @@
                 <th scope="col" class="px-6 py-3 text-start text-xs font-medium uppercase text-gray-500">Имя
                 </th>
                 <th scope="col" class="px-6 py-3 text-start text-xs font-medium uppercase text-gray-500">
-                    Из
-                </th>
-                <th scope="col" class="px-6 py-3 text-start text-xs font-medium uppercase text-gray-500">
-                    В
+                    Маршрут
                 </th>
                 <th scope="col" class="px-6 py-3 text-start text-xs font-medium uppercase text-gray-500">Номер
                     телефона</th>
@@ -101,8 +98,9 @@
                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-blue-300 underline"><a
                         href="{% url 'driver_details' driver.pk %}">{{ driver.driver }}</a></td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-800">{{ driver.driver.first_name|truncatechars:15 }}</td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-800">{% if driver.from_city == 'NK' %}Нукус{% else %}Шымбай{% endif %}</td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-800">{% if driver.to_city == 'NK' %}Нукус{% else %}Шымбай{% endif %}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-800">
+                    {% if driver.from_city == 'NK' %}Нукус{% else %}Шымбай{% endif %} -> {% if driver.to_city == 'NK' %}Нукус{% else %}Шымбай{% endif %}
+                </td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-800">{{ driver.driver.phone_number }}</td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-800">{{ driver.joined_at|date:"d.m.Y, H:i" }}</td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-800">{{ driver.driver.balance }}
@@ -110,7 +108,7 @@
                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-800">
                     <span
                         class="text-[10px] px-[7px] py-[2px] rounded-full {% if driver.status %}bg-green-400{% else %}bg-red-500{% endif %} text-white font-semibold">
-                        {% if driver.status %}Активен{% else %}Не активен{% endif %}
+                        {% if driver.status %}Активный{% else %}Не активный{% endif %}
                     </span>
                 </td>
             </tr>

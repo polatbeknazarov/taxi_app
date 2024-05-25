@@ -161,64 +161,72 @@ class LineConsumer(AsyncWebsocketConsumer):
 
     async def _handle_accept_order(self, data):
         order_id = data['order_id']
-        pricing = await sync_to_async(Pricing.get_singleton)()
-
         order = await sync_to_async(Order.objects.get)(id=order_id)
         driver = await sync_to_async(Line.objects.get)(driver=self.user)
-        client = await sync_to_async(Client.objects.get)(id=order.client_id)
-        user = await sync_to_async(User.objects.get)(id=self.user.id)
-
-        price = float(order.passengers) * float(pricing.order_fee)
-
-        if float(user.balance) - price < 0:
+        if driver.passengers + order.passengers > 4:
             await self.channel_layer.group_send(
                 self.username,
                 {
                     'type': 'send_message',
-                    'message': json.dumps({'type': 'rejected', 'detail': f'Insufficient funds. Your balance: {self.user.balance}'}),
+                    'message': json.dumps({'type': 'over_limit', 'detail': 'Not enough space'}),
                 },
             )
-            return
+        else:
+            pricing = await sync_to_async(Pricing.get_singleton)()
+            client = await sync_to_async(Client.objects.get)(id=order.client_id)
+            user = await sync_to_async(User.objects.get)(id=self.user.id)
 
-        if order.in_search:
-            order.driver = self.user
+            price = float(order.passengers) * float(pricing.order_fee)
 
-            order.in_search = False
-            order.is_free = False
+            if float(user.balance) - price < 0:
+                await self.channel_layer.group_send(
+                    self.username,
+                    {
+                        'type': 'send_message',
+                        'message': json.dumps({'type': 'rejected', 'detail': f'Insufficient funds. Your balance: {self.user.balance}'}),
+                    },
+                )
+                return
 
-            count = await sync_to_async(Order.objects.filter(client=client).count)()
+            if order.in_search:
+                order.driver = self.user
 
-            if count == 1:
-                client.balance = F('balance') + float(10000)
-            else:
-                client.balance = F('balance') + pricing.order_bonus
+                order.in_search = False
+                order.is_free = False
 
-            driver.passengers += order.passengers
-            user.balance = F('balance') - price
+                count = await sync_to_async(Order.objects.filter(client=client).count)()
 
-            await sync_to_async(driver.save)(update_fields=['passengers',])
-            await sync_to_async(client.save)()
+                if count == 1:
+                    client.balance = F('balance') + float(10000)
+                else:
+                    client.balance = F('balance') + pricing.order_bonus
 
-            await sync_to_async(client.refresh_from_db)()
-            client_balance_value = client.balance
-            await sync_to_async(send_sms.delay)(phone_number=client.phone_number, balance=client_balance_value)
-            await sync_to_async(order.save)()
-            await sync_to_async(user.save)()
+                driver.passengers += order.passengers
+                user.balance = F('balance') - price
 
-            await sync_to_async(OrdersHistory.objects.create)(driver=self.user, order=order)
+                await sync_to_async(driver.save)(update_fields=['passengers',])
+                await sync_to_async(client.save)()
 
-            if driver.passengers == 4:
-                await self._completed_driver()
+                await sync_to_async(client.refresh_from_db)()
+                client_balance_value = client.balance
+                await sync_to_async(send_sms.delay)(phone_number=client.phone_number, balance=client_balance_value)
+                await sync_to_async(order.save)()
+                await sync_to_async(user.save)()
 
-            await self._send_line_to_driver()
+                await sync_to_async(OrdersHistory.objects.create)(driver=self.user, order=order)
 
-            await self.channel_layer.group_send(
-                self.username,
-                {
-                    'type': 'send_message',
-                    'message': json.dumps({'type': 'accepted', 'order_id': order_id}),
-                },
-            )
+                if driver.passengers == 4:
+                    await self._completed_driver()
+
+                await self._send_line_to_driver()
+
+                await self.channel_layer.group_send(
+                    self.username,
+                    {
+                        'type': 'send_message',
+                        'message': json.dumps({'type': 'accepted', 'order_id': order_id}),
+                    },
+                )
 
     async def _handle_join_line(self, data):
         price = await sync_to_async(Pricing.get_singleton)()
@@ -250,7 +258,10 @@ class LineConsumer(AsyncWebsocketConsumer):
             }
         )
 
-        await self.channel_layer.group_add(
+        # await self.channel_layer.group_add(
+        #     self.username, self.channel_name
+        # )
+        await self.channel_layer.group_discard(
             self.username, self.channel_name
         )
 

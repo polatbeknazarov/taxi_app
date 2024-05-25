@@ -40,3 +40,7 @@ class DriverBalanceHistory(models.Model):
     transaction = models.CharField(
         max_length=2, choices=TYPE_CHOICES, blank=False)
     created_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = 'Balance History'
+        verbose_name_plural = 'Balance Histories'
