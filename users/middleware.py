@@ -16,7 +16,7 @@ def get_user(validated_token):
     try:
         user = User.objects.get(id=validated_token["user_id"])
 
-        if user.is_driver:
+        if user.is_driver and user.is_active:
             return user
         else:
             return AnonymousUser()

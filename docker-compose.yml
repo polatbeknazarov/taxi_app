@@ -20,8 +20,11 @@ services:
       POSTGRES_PASSWORD: taxi_api_1445464
     ports:
       - "5432:5432"
+    volumes:
+      - .my-postgres-data:/var/lib/postgresql/data
     networks:
       - my_network
+    restart: always
 
   web:
     build:
@@ -63,6 +66,7 @@ services:
 
 volumes:
   static_volume:
+  my-postgres-data:
 
 networks:
   my_network:

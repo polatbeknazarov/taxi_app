@@ -68,9 +68,7 @@ def orders(request):
     return render(request, 'dispatcher/orders.html', {'orders_list': page_obj})
 
 
-staff_member_required(login_url='login/')
-
-
+@staff_member_required(login_url='login/')
 def order_details(request, pk):
     client = get_object_or_404(Order, pk=pk).client
 
@@ -137,7 +135,16 @@ def driver_details(request, pk):
     else:
         form = DriverChangeForm(instance=driver.driver)
 
-    return render(request, 'dispatcher/driver_details.html', {'form': form, 'driver': driver.driver})
+    return render(request, 'dispatcher/driver_details.html', {'form': form, 'driver': driver})
+
+
+@staff_member_required(login_url='login/')
+def remove_from_line(request, pk):
+    Line.objects.filter(pk=pk).update(status=False)
+
+    print(pk)
+
+    return redirect('index')
 
 
 @staff_member_required(login_url='login/')
@@ -181,6 +188,7 @@ def minus_balance(request, pk):
 @staff_member_required(login_url='login/')
 def pricing(request):
     pricing = Pricing.get_singleton()
+    print(pricing)
 
     if request.method == 'POST':
         form = PricingForm(request.POST, instance=pricing)
@@ -234,8 +242,11 @@ def page_not_found_view(request, exception):
 def block_driver(request, pk):
     try:
         driver = get_object_or_404(User, pk=pk)
+        line = get_object_or_404(Line, driver=driver)
+        line.status = False
         driver.is_active = False
-        driver.save(update_fields=['is_active'])
+        line.save(update_fields=['status',])
+        driver.save(update_fields=['is_active',])
     except:
         messages.error(request, 'Произошла ошибка. Попробуйте еще раз.')
 

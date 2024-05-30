@@ -14,6 +14,8 @@ urlpatterns = [
          views.minus_balance, name='minus_balance'),
     path('drivers/<int:pk>/block/', views.block_driver, name='block_driver'),
     path('drivers/<int:pk>/unblock/', views.unblock_driver, name='unblock_driver'),
+    path('drivers/<int:pk>/remove/',
+         views.remove_from_line, name='remove_from_line'),
 
     path('orders/', views.orders, name='orders'),
     path('orders/<int:pk>/', views.order_details, name='order_details'),
