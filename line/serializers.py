@@ -20,6 +20,7 @@ class LineSerializer(serializers.ModelSerializer):
             'car_number',
             'car_brand',
             'passengers',
+            'passengers_required',
             'joined_at',
         )
 

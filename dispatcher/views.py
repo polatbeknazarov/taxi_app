@@ -88,8 +88,10 @@ def orders(request):
 
                         driver.passengers += int(
                             request.POST.get('passengers'))
-                        driver.driver.balance -= pricing_data.order_fee * passengers_count
-                        driver.save(update_fields=['passengers'])
+                        user = User.objects.get(pk=driver.driver.pk)
+                        user.balance -= pricing_data.order_fee * passengers_count
+                        driver.save()
+                        user.save()
                         driver.refresh_from_db()
 
                         if driver.passengers == driver.passengers_required:

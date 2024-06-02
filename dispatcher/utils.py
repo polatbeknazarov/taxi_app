@@ -22,6 +22,6 @@ def send_line(from_city, to_city):
             driver.driver.username,
             {
                 'type': 'send_message',
-                'message': json.dumps({'line': data}),
+                'message': json.dumps({'line': data.data}),
             }
         )

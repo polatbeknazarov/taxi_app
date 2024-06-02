@@ -5,6 +5,7 @@ from django.db.models import F
 from django.contrib.auth import get_user_model
 from django.core.exceptions import ObjectDoesNotExist
 from channels.generic.websocket import AsyncWebsocketConsumer
+from decimal import Decimal
 
 from line.models import Line
 from line.serializers import LineSerializer
@@ -103,36 +104,42 @@ class LineConsumer(AsyncWebsocketConsumer):
                 line_obj.passengers = 0
                 line_obj.passengers_required = self.passengers_required
 
-                free_orders = await sync_to_async(Order.objects.filter)(in_search=True, is_free=True)
+                free_orders = await sync_to_async(list)(Order.objects.filter(in_search=True, is_free=True))
 
                 if free_orders:
                     pricing = await sync_to_async(Pricing.get_singleton)()
+                    user = await sync_to_async(User.objects.get)(id=self.user.id)
 
                     for order in free_orders:
-                        if (self.user.balance >= order.passengers * pricing.order_fee) and (line_obj.passengers_required >= line_obj.passengers + order.passengers):
-                            order.driver = self.user
+                        if (user.balance >= order.passengers * pricing.order_fee) and (line_obj.passengers_required >= line_obj.passengers + order.passengers):
+                            price = float(order.passengers) * \
+                                float(pricing.order_fee)
+                            client = await sync_to_async(Client.objects.get)(pk=order.client_id)
+
+                            order.driver = user
                             order.is_free = False
                             order.in_search = False
                             line_obj.passengers += order.passengers
-                            line_obj.driver.balance -= F('balance') - \
-                                pricing.order_bonus * order.passengers
+                            user.balance = F('balance') - price
 
-                            await sync_to_async(order.save)(update_fields=['driver',])
+                            await sync_to_async(user.save)(update_fields=['balance',])
+                            await sync_to_async(order.save)()
                             await sync_to_async(line_obj.save)()
                             await sync_to_async(line_obj.refresh_from_db)()
 
                             if line_obj.passengers == line_obj.passengers_required:
                                 await self._completed_driver()
+                                await self._remove_driver_from_line()
 
                             await self._send_line_to_driver()
 
                             await sync_to_async(send_sms.delay)(
-                                phone_number=self.user.phone_number,
+                                phone_number=user.phone_number,
                                 message='"Saqiy Taxi". Назначена новая заявка, проверьте в Saqiy Taxi.'
                             )
                             await sync_to_async(send_sms.delay)(
-                                phone_number=order.client.phone_number,
-                                message=f'Saqiy Taxi. Вам назначена {self.user.car_brand} {self.user.car_number} Номер таксиста {self.user.phone_number}'
+                                phone_number=client.phone_number,
+                                message=f'Saqiy Taxi. Вам назначена {user.car_brand} {user.car_number} Номер таксиста {user.phone_number}'
                             )
 
                 await sync_to_async(line_obj.save)()
@@ -147,7 +154,7 @@ class LineConsumer(AsyncWebsocketConsumer):
 
     async def _remove_driver_from_line(self):
         line_obj = await sync_to_async(Line.objects.get)(driver=self.user)
-        await sync_to_async(Line.objects.filter(pk=line_obj.pk).update)(status=False)
+        await sync_to_async(Line.objects.filter(pk=line_obj.pk).update)(status=False, passengers=0)
 
         await self.channel_layer.group_discard(
             self.username,
@@ -161,12 +168,12 @@ class LineConsumer(AsyncWebsocketConsumer):
 
     async def _handle_join_line(self, data):
         price = await sync_to_async(Pricing.get_singleton)()
-        passengers_required = int(data['passengers_required'])
+        passengers_required = float(data['passengers_required'])
 
-        if float(self.user.balance) > float(price.order_fee) * passengers_required:
+        if Decimal(self.user.balance) > Decimal(price.order_fee) * Decimal(passengers_required):
             self.from_city = data['from_city']
             self.to_city = data['to_city']
-            self.passengers_required = data['passengers_required']
+            self.passengers_required = float(data['passengers_required'])
 
             await self._add_driver_to_line()
             await self._send_line_to_driver()
@@ -192,9 +199,9 @@ class LineConsumer(AsyncWebsocketConsumer):
             }
         )
 
-        await self.channel_layer.group_discard(
-            self.username, self.channel_name
-        )
+        # await self.channel_layer.group_discard(
+        #     self.username, self.channel_name
+        # )
 
     async def send_message(self, event):
         message = event['message']
