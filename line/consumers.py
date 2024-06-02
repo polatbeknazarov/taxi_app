@@ -35,19 +35,13 @@ class LineConsumer(AsyncWebsocketConsumer):
         )
 
         await self.accept()
-        await self._test()
+        await self._check_status()
 
     async def disconnect(self, code):
         pass
 
     async def receive(self, text_data):
         data = json.loads(text_data)
-
-        # if data['type'] == 'get_line':
-        #     await self._send_line_to_driver()
-
-        if data['type'] == 'test':
-            await self._test()
 
         if data['type'] == 'join_line':
             await self._handle_join_line(data)
@@ -98,9 +92,12 @@ class LineConsumer(AsyncWebsocketConsumer):
                 if free_orders:
                     pricing = await sync_to_async(Pricing.get_singleton)()
                     user = await sync_to_async(User.objects.get)(id=self.user.id)
+                    user_balance = float(user.balance)
+                    order_fee = float(pricing.order_fee)
 
                     for order in free_orders:
-                        if (user.balance >= order.passengers * pricing.order_fee) and (line_obj.passengers_required >= line_obj.passengers + order.passengers):
+                        new_passengers = float(order.passengers)
+                        if (user_balance >= new_passengers * order_fee) and (line_obj.passengers_required >= line_obj.passengers + order.passengers):
                             price = float(order.passengers) * \
                                 float(pricing.order_fee)
                             client = await sync_to_async(Client.objects.get)(pk=order.client_id)
@@ -160,7 +157,7 @@ class LineConsumer(AsyncWebsocketConsumer):
             self.channel_name,
         )
 
-    async def _test(self):
+    async def _check_status(self):
         driver = await sync_to_async(Line.objects.get)(driver=self.user)
 
         if driver and driver.status:

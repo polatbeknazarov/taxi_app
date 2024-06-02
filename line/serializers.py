@@ -21,6 +21,9 @@ class LineSerializer(serializers.ModelSerializer):
             'car_brand',
             'passengers',
             'passengers_required',
+            'from_city',
+            'to_city',
+            'status',
             'joined_at',
         )
 

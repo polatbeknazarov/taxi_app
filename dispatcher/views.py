@@ -59,7 +59,7 @@ def orders(request):
             address = request.POST.get('address')
             order_type = request.POST.get('order_type')
             passengers_count = int(request.POST.get(
-                'passengers')) if order_type == 'package' else 0
+                'passengers')) if order_type == 'regular' else 0
 
             client, created = Client.objects.get_or_create(
                 phone_number=request.POST.get('phone_number')
@@ -94,7 +94,7 @@ def orders(request):
                         if count == 1:
                             client.balance += float(10000)
                         else:
-                            client.balance += pricing.order_bonus
+                            client.balance += pricing_data.order_bonus
 
                         driver.passengers += passengers_count
                         user = User.objects.get(pk=driver.driver.pk)
@@ -164,10 +164,22 @@ def order_details(request, pk):
             client.balance -= amount
             client.save(update_fields=['balance'])
 
-            messages.success(request, f'Баланс успешно изменено.')
+            messages.success(request, 'Баланс успешно изменено.')
             return redirect('index')
 
     return render(request, 'dispatcher/order_details.html', {'client': client})
+
+
+@staff_member_required(login_url='login/')
+def order_delete(request, pk):
+    try:
+        Order.objects.get(pk=pk).delete()
+
+        messages.success(request, 'Заявка успешно удалена.')
+        return redirect('index')
+    except Exception as e:
+        messages.success(request, 'Произошла ошибка. Попробуйте еще раз.')
+        return redirect('index')
 
 
 @staff_member_required(login_url='login/')
@@ -203,7 +215,8 @@ def drivers(request):
 
 @staff_member_required(login_url='login/')
 def driver_details(request, pk):
-    driver = Line.objects.get(pk=pk)
+    user = User.objects.get(pk=pk)
+    driver = Line.objects.get(driver=user)
 
     if request.method == 'POST':
         form = DriverChangeForm(
