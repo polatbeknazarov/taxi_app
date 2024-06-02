@@ -21,6 +21,7 @@ class OrderSerializer(serializers.ModelSerializer):
         fields = (
             'id',
             'client',
+            'order_type',
             'from_city',
             'to_city',
             'address',
@@ -33,7 +34,7 @@ class OrderSerializer(serializers.ModelSerializer):
         phone_number = client_data.get('phone_number')
 
         client, created = Client.objects.get_or_create(
-            phone_number=phone_number, 
+            phone_number=phone_number,
             defaults=client_data,
         )
         order = Order.objects.create(client=client, **validated_data)

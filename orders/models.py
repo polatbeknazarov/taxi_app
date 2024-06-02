@@ -53,7 +53,7 @@ class Order(models.Model):
     )
     passengers = models.IntegerField(
         validators=[
-            MinValueValidator(1),
+            MinValueValidator(0),
             MaxValueValidator(4),
         ],
         default=1,

@@ -7,7 +7,7 @@
 
 <form method="POST">
     {% csrf_token %}
-    <div class="grid gap-6 mb-6 md:grid-cols-2">
+    <div class="grid gap-6 md:grid-cols-2">
         <div>
             <label for="phone" class="block mb-2 text-sm font-medium text-gray-900">Номер телефона</label>
             <input type="tel" id="phone" name="phone_number"
@@ -41,6 +41,14 @@
                 <option selected value="SB">Шымбай</option>
             </select>
         </div>
+    </div>
+    <div class="my-[20px]">
+        <label for="company" class="block mb-2 text-sm font-medium text-gray-900">Выберите тип заявки</label>
+        <select id="countries" name="order_type"
+            class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
+            <option selected value="regular">Без посылки</option>
+            <option value="package">С посылкой</option>
+        </select>
     </div>
     <div class="mb-[20px]">
 

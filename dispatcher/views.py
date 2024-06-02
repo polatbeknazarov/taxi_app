@@ -56,8 +56,10 @@ def orders(request):
         try:
             from_city = request.POST.get('from_city')
             to_city = request.POST.get('to_city')
-            passengers_count = int(request.POST.get('passengers'))
             address = request.POST.get('address')
+            order_type = request.POST.get('order_type')
+            passengers_count = int(request.POST.get(
+                'passengers')) if order_type == 'package' else 0
 
             client, created = Client.objects.get_or_create(
                 phone_number=request.POST.get('phone_number')
@@ -74,6 +76,7 @@ def orders(request):
                     if (driver.driver.balance >= passengers_count * pricing_data.order_fee) and (driver.passengers_required >= driver.passengers + passengers_count):
                         new_order = Order.objects.create(
                             client=client,
+                            order_type=order_type,
                             from_city=from_city,
                             to_city=to_city,
                             passengers=passengers_count,
@@ -86,17 +89,33 @@ def orders(request):
                         OrdersHistory.objects.create(
                             driver=driver.driver, order=new_order)
 
-                        driver.passengers += int(
-                            request.POST.get('passengers'))
+                        count = Order.objects.filter(client=client).count()
+
+                        if count == 1:
+                            client.balance += float(10000)
+                        else:
+                            client.balance += pricing.order_bonus
+
+                        driver.passengers += passengers_count
                         user = User.objects.get(pk=driver.driver.pk)
                         user.balance -= pricing_data.order_fee * passengers_count
                         driver.save()
                         user.save()
+                        client.save()
                         driver.refresh_from_db()
 
                         if driver.passengers == driver.passengers_required:
                             driver.status = False
                             driver.save(update_fields=['status'])
+                            channel_layer = get_channel_layer()
+
+                            async_to_sync(channel_layer.group_send)(
+                                driver.driver.username,
+                                {
+                                    'type': 'send_message',
+                                    'message': json.dumps({'type': 'completed'}),
+                                }
+                            )
 
                         send_line(from_city=driver.from_city,
                                   to_city=driver.to_city)
