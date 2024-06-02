@@ -69,9 +69,7 @@ def send_order(order_id, from_city, to_city):
 
 
 @app.task
-def send_sms(balance, phone_number='+998913930730'):
-    message = f"NO'KIS-SHIMBAY. Ma'nzilden-Ma'nzilge \"Saqiy Taxi\". Sizdin' ja'mi bonusin'iz: {balance}. Tel: 55 106-48-48, 77 106-48-48"
-
+def send_sms(phone_number, message):
     eskiz_api = SendSmsWithEskizApi(
         message=message, phone=phone_number.replace('+', ''))
     eskiz_api.send_message()

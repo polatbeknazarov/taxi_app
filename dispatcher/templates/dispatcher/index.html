@@ -74,12 +74,12 @@
                 <th scope="col" class="px-6 py-3 text-start text-xs font-medium uppercase text-gray-500">Пассажиров
                 </th>
                 <th scope="col" class="px-6 py-3 text-start text-xs font-medium uppercase text-gray-500">
-                    Из
+                    Маршрут
                 </th>
-                <th scope="col" class="px-6 py-3 text-start text-xs font-medium uppercase text-gray-500">В</th>
                 <th scope="col" class="px-6 py-3 text-start text-xs font-medium uppercase text-gray-500">
                     Дата</th>
                 <th scope="col" class="px-6 py-3 text-start text-xs font-medium uppercase text-gray-500">Статус</th>
+                <th scope="col" class="px-6 py-3 text-start text-xs font-medium uppercase text-gray-500">Водитель</th>
                 <th scope="col" class="px-6 py-3 text-start text-xs font-medium uppercase text-gray-500">Бонус</th>
             </tr>
         </thead>
@@ -92,17 +92,21 @@
                     <a href="{% url "order_details" order.pk %}" class="whitespace-nowrap text-sm font-medium text-blue-300 underline">{{ order.client}}</a>
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-800">{{ order.passengers }}</td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-800">{% if order.from_city == 'NK' %}Нукус{% else %}Шымбай{% endif %}</td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-800">{% if order.to_city == 'NK' %}Нукус{% else %}Шымбай{% endif %}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-800">{% if order.from_city == 'NK' %}Нукус{% else %}Шымбай{% endif %} -> {% if order.to_city == 'NK' %}Нукус{% else %}Шымбай{% endif %}</td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-800">{{ order.created_at|date:"d.m.Y, H:i" }}</td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-800">
-                    <span
-                        class="text-[10px] px-[7px] py-[2px] rounded-full {% if order.in_search %}bg-green-400{% endif %} text-white font-semibold">
-                        {% if order.in_search %}Идет поиск водителя{% endif %}
+                    <span class="text-[10px] px-[7px] py-[2px] rounded-full {% if order.in_search %}bg-red-400{% else %}bg-green-400{% endif %} text-white font-semibold">
+                        {% if order.in_search %}Идет поиск водителя{% else %}Водитель найден{% endif %}
                     </span>
                 </td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-800">{{ order.client.balance }}
+                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-800">
+                    {% if order.driver %}
+                        <a href="{% url "driver_details" order.driver.pk %}" class="whitespace-nowrap text-sm font-medium text-blue-300 underline">{{ order.driver }}</a>
+                    {% else %}
+                        Не найден
+                    {% endif %}
                 </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-800">{{ order.client.balance }}</td>
             </tr>
             {% endfor %}
             {% else %}
@@ -158,6 +162,7 @@
     <table class="w-full divide-y divide-gray-200">
         <thead>
             <tr>
+                <th scope="col" class="px-6 py-3 text-start text-xs font-medium uppercase text-gray-500">#</th>
                 <th scope="col" class="px-6 py-3 text-start text-xs font-medium uppercase text-gray-500">Имя
                     пользователя</th>
                 <th scope="col" class="px-6 py-3 text-start text-xs font-medium uppercase text-gray-500">Имя
@@ -180,8 +185,12 @@
             {% if drivers_list_nk %}
             {% for driver in drivers_list_nk %}
             <tr>
-                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-blue-300 underline"><a
-                        href="{% url 'driver_details' driver.pk %}">{{ driver.driver }}</a></td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-800">
+                    {{ forloop.counter }}
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-blue-300 underline">
+                    <a href="{% url 'driver_details' driver.pk %}">{{ driver.driver }}</a>
+                </td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-800">{{ driver.driver.first_name|truncatechars:15 }}</td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-800">
                     {% if driver.from_city == 'NK' %}Нукус{% else %}Шымбай{% endif %} -> {% if driver.to_city == 'NK' %}Нукус{% else %}Шымбай{% endif %}
@@ -200,7 +209,7 @@
             {% endfor %}
             {% else %}
             <tr>
-                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-blue-300 underline">
+                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-800">
                     Список пуст
                 </td>
             </tr>
@@ -215,6 +224,7 @@
     <table class="w-full divide-y divide-gray-200">
         <thead>
             <tr>
+                <th scope="col" class="px-6 py-3 text-start text-xs font-medium uppercase text-gray-500">#</th>
                 <th scope="col" class="px-6 py-3 text-start text-xs font-medium uppercase text-gray-500">Имя
                     пользователя</th>
                 <th scope="col" class="px-6 py-3 text-start text-xs font-medium uppercase text-gray-500">Имя
@@ -237,6 +247,9 @@
             {% if drivers_list_sb %}
             {% for driver in drivers_list_sb %}
             <tr>
+                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-800">
+                    {{ forloop.counter }}
+                </td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-blue-300 underline"><a
                         href="{% url 'driver_details' driver.pk %}">{{ driver.driver }}</a></td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-800">{{ driver.driver.first_name|truncatechars:15 }}</td>
@@ -257,7 +270,7 @@
             {% endfor %}
             {% else %}
             <tr>
-                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-blue-300 underline">
+                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-800">
                     Список пуст
                 </td>
             </tr>

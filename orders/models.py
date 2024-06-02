@@ -32,7 +32,12 @@ class Order(models.Model):
         ('NK', 'Нукус'),
         ('SB', 'Шымбай'),
     ]
+    ORDER_TYPES_CHOICES = [
+        ('regular', 'Regular order'),
+        ('package', 'Package order'),
+    ]
 
+    order_type = models.CharField(max_length=10, choices=ORDER_TYPES_CHOICES)
     client = models.ForeignKey(Client, on_delete=models.CASCADE)
     from_city = models.CharField(
         max_length=2,
@@ -79,12 +84,12 @@ class OrdersHistory(models.Model):
         return f'Driver: {self.driver} - Order: {self.order}'
 
 
-@receiver(post_save, sender=Order)
-def order_post_save(sender, instance, created, **kwargs):
-    from orders.tasks import send_order
+# @receiver(post_save, sender=Order)
+# def order_post_save(sender, instance, created, **kwargs):
+#     from orders.tasks import send_order
 
-    send_order.delay(
-        order_id=instance.id,
-        from_city=instance.from_city,
-        to_city=instance.to_city,
-    )
+#     send_order.delay(
+#         order_id=instance.id,
+#         from_city=instance.from_city,
+#         to_city=instance.to_city,
+#     )

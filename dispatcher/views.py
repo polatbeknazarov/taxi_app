@@ -1,3 +1,5 @@
+import json
+
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import authenticate, login, logout, get_user_model
@@ -5,11 +7,16 @@ from django.contrib import messages
 from django.contrib.admin.views.decorators import staff_member_required
 from django.core.paginator import Paginator
 from decimal import Decimal
+from asgiref.sync import async_to_sync
+from channels.layers import get_channel_layer
 
 from dispatcher.forms import DriverChangeForm, PricingForm, RegisterDriverForm
 from dispatcher.models import Pricing, DriverBalanceHistory
-from orders.models import Order, Client
+from dispatcher.utils import send_line
+from orders.models import Order, Client, OrdersHistory
+from orders.tasks import send_sms
 from line.models import Line
+from line.serializers import LineSerializer
 
 
 User = get_user_model()
@@ -21,9 +28,9 @@ def index(request):
     all_orders = Order.objects.count()
     all_drivers = Line.objects.count()
     drivers_list_nk = Line.objects.filter(
-        status=True, from_city='NK').order_by('-status', '-joined_at')
+        status=True, from_city='NK').order_by('-status', 'joined_at')
     drivers_list_sb = Line.objects.filter(
-        status=True, from_city='SB').order_by('-status', '-joined_at')
+        status=True, from_city='SB').order_by('-status', 'joined_at')
 
     context = {
         'orders_quantity': all_orders,
@@ -47,21 +54,75 @@ def orders(request):
 
     if request.method == 'POST':
         try:
+            from_city = request.POST.get('from_city')
+            to_city = request.POST.get('to_city')
+            passengers_count = int(request.POST.get('passengers'))
+            address = request.POST.get('address')
+
             client, created = Client.objects.get_or_create(
                 phone_number=request.POST.get('phone_number')
             )
+            drivers_line = Line.objects.filter(
+                status=True,
+                from_city=from_city,
+                to_city=to_city,
+            ).order_by('-created_at')
+            pricing_data = Pricing.get_singleton()
+
+            if drivers_line:
+                for driver in drivers_line:
+                    if (driver.driver.balance >= passengers_count * pricing_data.order_fee) and (driver.passengers_required >= driver.passengers + passengers_count):
+                        new_order = Order.objects.create(
+                            client=client,
+                            from_city=from_city,
+                            to_city=to_city,
+                            passengers=passengers_count,
+                            address=address,
+                            driver=driver.driver,
+                            in_search=False,
+                            is_free=False,
+                        )
+
+                        OrdersHistory.objects.create(
+                            driver=driver.driver, order=new_order)
+
+                        driver.passengers += int(
+                            request.POST.get('passengers'))
+                        driver.driver.balance -= pricing_data.order_fee * passengers_count
+                        driver.save(update_fields=['passengers'])
+                        driver.refresh_from_db()
+
+                        if driver.passengers == driver.passengers_required:
+                            driver.status = False
+                            driver.save(update_fields=['status'])
+
+                        send_line(from_city=driver.from_city,
+                                  to_city=driver.to_city)
+                        send_sms.delay(
+                            phone_number=driver.driver.phone_number,
+                            message='"Saqiy Taxi". Назначена новая заявка, проверьте в Saqiy Taxi.'
+                        )
+                        send_sms.delay(
+                            phone_number=new_order.client.phone_number,
+                            message=f'Saqiy Taxi. Вам назначена {driver.driver.car_brand} {driver.driver.car_number} Номер таксиста {driver.driver.phone_number}'
+                        )
+
+                        messages.success(request, 'Заявка создана')
+                        return redirect('index')
 
             Order.objects.create(
                 client=client,
-                from_city=request.POST.get('from_city'),
-                to_city=request.POST.get('to_city'),
-                passengers=request.POST.get('passengers'),
-                address=request.POST.get('address'),
+                from_city=from_city,
+                to_city=to_city,
+                passengers=passengers_count,
+                address=address,
+                in_search=True,
+                is_free=True,
             )
-
             messages.success(request, 'Заявка создана')
             return redirect('index')
         except Exception as e:
+            print(e)
             messages.error(
                 request, f'Произошла ошибка. Попробуйте еще раз.\n\n{e}')
 
@@ -106,7 +167,8 @@ def drivers(request):
             user.is_driver = True
             user.car_number = car_number
             user.save()
-            Line.objects.create(driver=user, from_city='NK', to_city='SB')
+            Line.objects.create(driver=user, from_city='NK',
+                                to_city='SB', passengers_required=0)
 
             messages.success(request, 'Водитель успешно создан.')
             return redirect('index')
@@ -140,9 +202,23 @@ def driver_details(request, pk):
 
 @staff_member_required(login_url='login/')
 def remove_from_line(request, pk):
-    Line.objects.filter(pk=pk).update(status=False)
+    channel_layer = get_channel_layer()
 
-    print(pk)
+    driver = Line.objects.get(pk=pk)
+    driver.status = False
+    driver.save()
+
+    line = Line.objects.filter(status=True)
+    data = LineSerializer(line, many=True)
+
+    for driver in line:
+        async_to_sync(channel_layer.group_send)(
+            driver.driver.username,
+            {
+                'type': 'send_message',
+                'message': json.dumps({'line': data}),
+            }
+        )
 
     return redirect('index')
 

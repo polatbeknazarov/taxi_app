@@ -31,6 +31,12 @@ class Line(models.Model):
         ],
         default=0,
     )
+    passengers_required = models.IntegerField(
+        validators=[
+            MinValueValidator(1),
+            MaxValueValidator(4),
+        ],
+    )
     joined_at = models.DateTimeField(auto_now=True)
     created_at = models.DateTimeField(auto_now_add=True)
     status = models.BooleanField(default=False)
