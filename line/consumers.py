@@ -51,7 +51,7 @@ class LineConsumer(AsyncWebsocketConsumer):
 
     async def _send_line_to_driver(self):
         online_drivers = await sync_to_async(Line.objects.filter)(status=True, from_city=self.from_city, to_city=self.to_city)
-        line = await sync_to_async(Line.objects.filter)(from_city=self.from_city, to_city=self.to_city)
+        line = await sync_to_async(Line.objects.filter)(status=True, from_city=self.from_city, to_city=self.to_city)
         data = await sync_to_async(self._serialize_line)(online_drivers)
 
         line_list = await sync_to_async(list)(line)
@@ -87,7 +87,12 @@ class LineConsumer(AsyncWebsocketConsumer):
                 line_obj.passengers = 0
                 line_obj.passengers_required = self.passengers_required
 
-                free_orders = await sync_to_async(list)(Order.objects.filter(in_search=True, is_free=True))
+                free_orders = await sync_to_async(list)(Order.objects.filter(
+                    in_search=True,
+                    is_free=True,
+                    from_city=self.from_city,
+                    to_city=self.to_city,
+                ))
 
                 if free_orders:
                     pricing = await sync_to_async(Pricing.get_singleton)()
@@ -122,6 +127,18 @@ class LineConsumer(AsyncWebsocketConsumer):
                             await sync_to_async(client.save)()
                             await sync_to_async(line_obj.refresh_from_db)()
                             await sync_to_async(client.refresh_from_db)()
+
+                            await self.channel_layer.group_send(
+                                user.username,
+                                {
+                                    'type': 'send_message',
+                                    'message': json.dumps(
+                                        {
+                                            'type': 'new_order',
+                                        }
+                                    ),
+                                },
+                            )
 
                             if line_obj.passengers == line_obj.passengers_required:
                                 await self._completed_driver()
@@ -223,9 +240,9 @@ class LineConsumer(AsyncWebsocketConsumer):
             }
         )
 
-        # await self.channel_layer.group_discard(
-        #     self.username, self.channel_name
-        # )
+        await self.channel_layer.group_discard(
+            self.username, self.channel_name
+        )
 
     async def send_message(self, event):
         message = event['message']

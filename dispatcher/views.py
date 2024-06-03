@@ -74,6 +74,8 @@ def orders(request):
             if drivers_line:
                 for driver in drivers_line:
                     if (driver.driver.balance >= passengers_count * pricing_data.order_fee) and (driver.passengers_required >= driver.passengers + passengers_count):
+                        channel_layer = get_channel_layer()
+
                         new_order = Order.objects.create(
                             client=client,
                             order_type=order_type,
@@ -104,11 +106,19 @@ def orders(request):
                         client.save()
                         driver.refresh_from_db()
 
+                        async_to_sync(channel_layer.group_send)(
+                            user.username,
+                            {
+                                'type': 'send_message',
+                                'message': json.dumps({'type': 'new_order'}),
+                            }
+                        )
+
                         if driver.passengers == driver.passengers_required:
                             driver.status = False
-                            driver.save(update_fields=['status'])
-                            channel_layer = get_channel_layer()
-
+                            driver.passengers = 0
+                            driver.save(update_fields=[
+                                        'status', 'passengers',])
                             async_to_sync(channel_layer.group_send)(
                                 driver.driver.username,
                                 {
@@ -125,7 +135,7 @@ def orders(request):
                         )
                         send_sms.delay(
                             phone_number=new_order.client.phone_number,
-                            message=f'Saqiy Taxi. Вам назначена {driver.driver.car_brand} {driver.driver.car_number} Номер таксиста {driver.driver.phone_number}'
+                            message=f'Saqiy Taxi. Вам назначена "{driver.driver.car_brand} {driver.driver.car_number}" Номер таксиста: {driver.driver.phone_number}. Бонус: {client.balance}'
                         )
 
                         messages.success(request, 'Заявка создана')
@@ -133,6 +143,7 @@ def orders(request):
 
             Order.objects.create(
                 client=client,
+                order_type=order_type,
                 from_city=from_city,
                 to_city=to_city,
                 passengers=passengers_count,
