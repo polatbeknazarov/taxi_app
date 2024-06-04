@@ -23,6 +23,7 @@ class OrderAdmin(admin.ModelAdmin):
         'to_city',
         'address',
         'created_at',
+        'updated_at',
     )
     list_editable = (
         'from_city',

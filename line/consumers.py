@@ -1,6 +1,5 @@
 import json
 
-from datetime import datetime
 from asgiref.sync import sync_to_async
 from django.db.models import F
 from django.contrib.auth import get_user_model
@@ -129,7 +128,6 @@ class LineConsumer(AsyncWebsocketConsumer):
                             await sync_to_async(client.refresh_from_db)()
 
                             if line_obj.passengers == line_obj.passengers_required:
-                                await self._remove_driver_from_line()
                                 await self._completed_driver()
 
                             await sync_to_async(send_sms.delay)(
@@ -162,15 +160,6 @@ class LineConsumer(AsyncWebsocketConsumer):
                 passengers_required=self.passengers_required,
                 passengers=0,
             )
-
-    async def _remove_driver_from_line(self):
-        line_obj = await sync_to_async(Line.objects.get)(driver=self.user)
-        await sync_to_async(Line.objects.filter(pk=line_obj.pk).update)(status=False, passengers=0)
-
-        await self.channel_layer.group_discard(
-            self.username,
-            self.channel_name,
-        )
 
     async def _check_status(self):
         driver = await sync_to_async(Line.objects.get)(driver=self.user)
@@ -228,7 +217,9 @@ class LineConsumer(AsyncWebsocketConsumer):
     async def _completed_driver(self):
         line_obj = await sync_to_async(Line.objects.get)(driver=self.user)
 
-        await sync_to_async(Line.objects.filter(pk=line_obj.pk).update)(status=False)
+        line_obj.status = False
+        line_obj.passengers = 0
+        line_obj.save(update_fields=['status', 'passengers',])
 
         await self.channel_layer.group_send(
             self.username,
@@ -241,8 +232,6 @@ class LineConsumer(AsyncWebsocketConsumer):
         await self.channel_layer.group_discard(
             self.username, self.channel_name
         )
-
-        await self._send_line_to_driver()
 
     async def send_message(self, event):
         message = event['message']
