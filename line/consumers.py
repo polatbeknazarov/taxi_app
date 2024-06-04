@@ -1,5 +1,6 @@
 import json
 
+from datetime import datetime
 from asgiref.sync import sync_to_async
 from django.db.models import F
 from django.contrib.auth import get_user_model
@@ -127,23 +128,9 @@ class LineConsumer(AsyncWebsocketConsumer):
                             await sync_to_async(line_obj.refresh_from_db)()
                             await sync_to_async(client.refresh_from_db)()
 
-                            await self.channel_layer.group_send(
-                                user.username,
-                                {
-                                    'type': 'send_message',
-                                    'message': json.dumps(
-                                        {
-                                            'type': 'new_order',
-                                        }
-                                    ),
-                                },
-                            )
-
                             if line_obj.passengers == line_obj.passengers_required:
                                 await self._remove_driver_from_line()
                                 await self._completed_driver()
-
-                            await self._send_line_to_driver()
 
                             await sync_to_async(send_sms.delay)(
                                 phone_number=user.phone_number,
@@ -154,6 +141,18 @@ class LineConsumer(AsyncWebsocketConsumer):
                                 message=f'Saqiy Taxi. Вам назначена "{user.car_brand} {user.car_number}" Номер таксиста: {user.phone_number}. Бонус: {client.balance} сум'
                             )
 
+                if line_obj.passengers > 1:
+                    await self.channel_layer.group_send(
+                        user.username,
+                        {
+                            'type': 'send_message',
+                                    'message': json.dumps(
+                                        {
+                                            'type': 'new_order',
+                                        }
+                                    ),
+                        },
+                    )
                 await sync_to_async(line_obj.save)()
         except ObjectDoesNotExist:
             await sync_to_async(Line.objects.create)(
@@ -242,6 +241,8 @@ class LineConsumer(AsyncWebsocketConsumer):
         await self.channel_layer.group_discard(
             self.username, self.channel_name
         )
+
+        await self._send_line_to_driver()
 
     async def send_message(self, event):
         message = event['message']

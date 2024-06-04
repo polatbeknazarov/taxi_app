@@ -212,6 +212,8 @@ def order_cancel(request, pk):
 
         client.save(update_fields=['balance',])
         user.save(update_fields=['balance',])
+        driver.passengers -= order.passengers
+        driver.save(update_fields=['passengers',])
         order.delete()
 
         messages.success(request, 'Заявка успешно отменена.')

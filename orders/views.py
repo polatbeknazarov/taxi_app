@@ -21,7 +21,7 @@ class LastPassengersAPIView(APIView):
         user = request.user
         driver = Line.objects.get(driver=user)
         orders = Order.objects.filter(
-            driver=user.id, created_at__gt=driver.joined_at).order_by('-created_at')
+            driver=driver, updated_at__gt=driver.joined_at).order_by('-created_at')
         serializer = OrderSerializer(orders, many=True)
 
         return Response(serializer.data)
