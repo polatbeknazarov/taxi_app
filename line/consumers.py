@@ -50,9 +50,8 @@ class LineConsumer(AsyncWebsocketConsumer):
             await self._leave_line()
 
     async def _send_line_to_driver(self):
-        online_drivers = await sync_to_async(Line.objects.filter)(status=True, from_city=self.from_city, to_city=self.to_city)
         line = await sync_to_async(Line.objects.filter)(status=True, from_city=self.from_city, to_city=self.to_city)
-        data = await sync_to_async(self._serialize_line)(online_drivers)
+        data = await sync_to_async(self._serialize_line)(line)
 
         line_list = await sync_to_async(list)(line)
 
@@ -141,8 +140,8 @@ class LineConsumer(AsyncWebsocketConsumer):
                             )
 
                             if line_obj.passengers == line_obj.passengers_required:
-                                await self._completed_driver()
                                 await self._remove_driver_from_line()
+                                await self._completed_driver()
 
                             await self._send_line_to_driver()
 
@@ -152,7 +151,7 @@ class LineConsumer(AsyncWebsocketConsumer):
                             )
                             await sync_to_async(send_sms.delay)(
                                 phone_number=client.phone_number,
-                                message=f'Saqiy Taxi. Вам назначена "{user.car_brand} {user.car_number}" Номер таксиста: {user.phone_number}. Бонус: {client.balance}'
+                                message=f'Saqiy Taxi. Вам назначена "{user.car_brand} {user.car_number}" Номер таксиста: {user.phone_number}. Бонус: {client.balance} сум'
                             )
 
                 await sync_to_async(line_obj.save)()
@@ -178,7 +177,7 @@ class LineConsumer(AsyncWebsocketConsumer):
         driver = await sync_to_async(Line.objects.get)(driver=self.user)
 
         if driver and driver.status:
-            line = await sync_to_async(Line.objects.filter)(from_city=driver.from_city, to_city=driver.to_city)
+            line = await sync_to_async(Line.objects.filter)(status=True, from_city=driver.from_city, to_city=driver.to_city)
             data = await sync_to_async(self._serialize_line)(line)
 
             for driver in line:

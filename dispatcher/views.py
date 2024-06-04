@@ -68,7 +68,7 @@ def orders(request):
                 status=True,
                 from_city=from_city,
                 to_city=to_city,
-            ).order_by('-created_at')
+            ).order_by('created_at')
             pricing_data = Pricing.get_singleton()
 
             if drivers_line:
@@ -101,7 +101,7 @@ def orders(request):
                         driver.passengers += passengers_count
                         user = User.objects.get(pk=driver.driver.pk)
                         user.balance -= pricing_data.order_fee * passengers_count
-                        driver.save()
+                        driver.save(update_fields=['passengers',])
                         user.save()
                         client.save()
                         driver.refresh_from_db()
@@ -135,7 +135,7 @@ def orders(request):
                         )
                         send_sms.delay(
                             phone_number=new_order.client.phone_number,
-                            message=f'Saqiy Taxi. Вам назначена "{driver.driver.car_brand} {driver.driver.car_number}" Номер таксиста: {driver.driver.phone_number}. Бонус: {client.balance}'
+                            message=f'Saqiy Taxi. Вам назначена "{driver.driver.car_brand} {driver.driver.car_number}" Номер таксиста: {driver.driver.phone_number}. Бонус: {client.balance} сум'
                         )
 
                         messages.success(request, 'Заявка создана')
@@ -187,6 +187,33 @@ def order_delete(request, pk):
         Order.objects.get(pk=pk).delete()
 
         messages.success(request, 'Заявка успешно удалена.')
+        return redirect('index')
+    except Exception as e:
+        messages.success(request, 'Произошла ошибка. Попробуйте еще раз.')
+        return redirect('index')
+
+
+@staff_member_required(login_url='login/')
+def order_cancel(request, pk):
+    try:
+        order = Order.objects.get(pk=pk)
+        client = Client.objects.get(pk=order.client.pk)
+        client_order = Order.objects.filter(client=client).count()
+        driver = Line.objects.get(pk=order.driver.pk)
+        user = User.objects.get(pk=driver.driver.pk)
+
+        pricing_data = Pricing.get_singleton()
+
+        user.balance += pricing_data.order_fee
+        if client_order == 1:
+            client.balance -= float(10000)
+        else:
+            client.balance -= pricing_data.order_bonus
+
+        client.save(update_fields=['balance',])
+        user.save(update_fields=['balance',])
+
+        messages.success(request, 'Заявка успешно отменена.')
         return redirect('index')
     except Exception as e:
         messages.success(request, 'Произошла ошибка. Попробуйте еще раз.')
@@ -253,7 +280,8 @@ def remove_from_line(request, pk):
     driver.status = False
     driver.save()
 
-    line = Line.objects.filter(status=True)
+    line = Line.objects.filter(
+        status=True, from_city=driver.from_city, to_city=driver.to_city)
     data = LineSerializer(line, many=True)
 
     for driver in line:

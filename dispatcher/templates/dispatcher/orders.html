@@ -105,6 +105,9 @@
                     {% endif %}
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-800">{{ order.client.balance }}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-red-500">
+                    <a href="{% url "order_cancel" order.pk %}">Отменить</a>
+                </td>
             </tr>
             {% endfor %}
             {% else %}
