@@ -3,7 +3,7 @@ from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.core.validators import RegexValidator, MaxValueValidator, MinValueValidator
 
-from users.models import CustomUser
+from line.models import Line
 
 
 class Client(models.Model):
@@ -62,7 +62,7 @@ class Order(models.Model):
     in_search = models.BooleanField(default=True)
     is_free = models.BooleanField(default=False)
     driver = models.ForeignKey(
-        CustomUser,
+        Line,
         on_delete=models.CASCADE,
         null=True,
     )
@@ -73,7 +73,7 @@ class Order(models.Model):
 
 
 class OrdersHistory(models.Model):
-    driver = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
+    driver = models.ForeignKey(Line, on_delete=models.CASCADE)
     order = models.ForeignKey(Order, on_delete=models.CASCADE)
 
     class Meta:

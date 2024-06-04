@@ -83,13 +83,13 @@ def orders(request):
                             to_city=to_city,
                             passengers=passengers_count,
                             address=address,
-                            driver=driver.driver,
+                            driver=driver,
                             in_search=False,
                             is_free=False,
                         )
 
                         OrdersHistory.objects.create(
-                            driver=driver.driver, order=new_order)
+                            driver=driver, order=new_order)
 
                         count = Order.objects.filter(client=client).count()
 
@@ -212,6 +212,7 @@ def order_cancel(request, pk):
 
         client.save(update_fields=['balance',])
         user.save(update_fields=['balance',])
+        order.delete()
 
         messages.success(request, 'Заявка успешно отменена.')
         return redirect('index')
@@ -289,7 +290,7 @@ def remove_from_line(request, pk):
             driver.driver.username,
             {
                 'type': 'send_message',
-                'message': json.dumps({'line': data}),
+                'message': json.dumps({'line': data.data}),
             }
         )
 

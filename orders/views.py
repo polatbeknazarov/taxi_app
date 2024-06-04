@@ -7,6 +7,7 @@ from django.db.models import F
 
 from orders.models import Order
 from orders.serializers import OrderSerializer
+from line.models import Line
 
 
 User = get_user_model()
@@ -18,8 +19,9 @@ class LastPassengersAPIView(APIView):
 
     def get(self, request):
         user = request.user
-        orders = Order.objects.filter(driver=user.id, created_at__gt=F(
-            'driver__joined_at')).order_by('-created_at')
+        driver = Line.objects.get(driver=user)
+        orders = Order.objects.filter(
+            driver=user.id, created_at__gt=driver.joined_at).order_by('-created_at')
         serializer = OrderSerializer(orders, many=True)
 
         return Response(serializer.data)

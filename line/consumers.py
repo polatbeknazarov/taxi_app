@@ -106,7 +106,7 @@ class LineConsumer(AsyncWebsocketConsumer):
                                 float(pricing.order_fee)
                             client = await sync_to_async(Client.objects.get)(pk=order.client_id)
 
-                            order.driver = user
+                            order.driver = line_obj
                             order.is_free = False
                             order.in_search = False
                             line_obj.passengers += order.passengers
