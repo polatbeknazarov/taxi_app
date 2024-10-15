@@ -86,6 +86,8 @@ class LineConsumer(AsyncWebsocketConsumer):
                 line_obj.passengers = 0
                 line_obj.passengers_required = self.passengers_required
 
+                await sync_to_async(line_obj.save)()
+
                 free_orders = await sync_to_async(list)(Order.objects.filter(
                     in_search=True,
                     is_free=True,
@@ -121,25 +123,19 @@ class LineConsumer(AsyncWebsocketConsumer):
                                     'balance') + pricing.order_bonus
 
                             await sync_to_async(user.save)(update_fields=['balance',])
+                            await sync_to_async(line_obj.save)(update_fields=['passengers',])
                             await sync_to_async(order.save)()
-                            await sync_to_async(line_obj.save)()
                             await sync_to_async(client.save)()
                             await sync_to_async(line_obj.refresh_from_db)()
                             await sync_to_async(client.refresh_from_db)()
 
-                            if line_obj.passengers == line_obj.passengers_required:
-                                await self._completed_driver()
-
-                            await sync_to_async(send_sms.delay)(
-                                phone_number=user.phone_number,
-                                message='"Saqiy Taxi". Назначена новая заявка, проверьте в Saqiy Taxi.'
-                            )
                             await sync_to_async(send_sms.delay)(
                                 phone_number=client.phone_number,
                                 message=f'Saqiy Taxi. Вам назначена "{user.car_brand} {user.car_number}" Номер таксиста: {user.phone_number}. Бонус: {client.balance} сум'
                             )
+                            await sync_to_async(user.refresh_from_db)()
 
-                if line_obj.passengers > 1:
+                if line_obj.passengers > 0:
                     await self.channel_layer.group_send(
                         user.username,
                         {
@@ -151,7 +147,8 @@ class LineConsumer(AsyncWebsocketConsumer):
                                     ),
                         },
                     )
-                await sync_to_async(line_obj.save)()
+                if line_obj.passengers == line_obj.passengers_required:
+                    await self._completed_driver()
         except ObjectDoesNotExist:
             await sync_to_async(Line.objects.create)(
                 driver=self.user,

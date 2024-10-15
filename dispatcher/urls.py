@@ -7,6 +7,7 @@ urlpatterns = [
     path('', views.index, name='index'),
 
     path('drivers/', views.drivers, name='drivers'),
+    path('search/', views.search, name='search'),
     path('drivers/<int:pk>/edit/', views.driver_details, name='driver_details'),
     path('drivers/<int:pk>/add_balance/',
          views.add_balance, name='add_balance'),
@@ -20,7 +21,8 @@ urlpatterns = [
     path('orders/', views.orders, name='orders'),
     path('orders/<int:pk>/', views.order_details, name='order_details'),
     path('orders/delete/<int:pk>/', views.order_delete, name='order_delete'),
-    path('orders/cancle/<int:pk>/', views.order_cancel, name='order_cancel'),
+    path('orders/cancel_order/<int:pk>/',
+         views.cancel_order, name='cancel_order'),
 
     path('pricing/', views.pricing, name='pricing'),
     path('history/', views.history, name='history'),

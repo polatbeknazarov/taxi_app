@@ -7,8 +7,8 @@
     <div class="shadow-lg bg-white p-4 rounded-md h-[150px] flex justify-between">
         <div class="flex flex-col justify-between">
             <p class="font-bold text-[16px]">Общее количество водителей</p>
-            <p class="font-semibold text-green-500">{{ drivers_quantity }}</p>
-            <span class="font-normal text-gray-400 text-[12px]">За все время</span>
+            <p class="font-semibold text-green-500">Общее количество: {{ drivers_quantity }}</p>
+            <p class="font-semibold text-green-500 text-[12px]">Онлайн: {{ online_drivers_count }}</p>
         </div>
 
         <div class="flex items-center">
@@ -47,8 +47,8 @@
     <div class="shadow-lg bg-white p-4 rounded-md h-[150px] flex justify-between">
         <div class="flex flex-col justify-between">
             <p class="font-bold text-[16px]">Общее количество заявок</p>
-            <p class="font-semibold text-green-500">{{ orders_quantity }}</p>
-            <span class="font-normal text-gray-400 text-[12px]">За все время</span>
+            <p class="font-semibold text-green-500">Общее количество: {{ orders_quantity }}</p>
+            <p class="font-semibold text-green-500 text-[12px]">Сегодня: {{ all_orders_today }}</p>
         </div>
 
         <div class="flex items-center">
@@ -254,3 +254,4 @@
 
 
 {% endblock content %}
+

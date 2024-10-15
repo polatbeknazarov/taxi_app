@@ -73,6 +73,11 @@
 </form>
 
 <h1 class="mt-[20px] mb-[10px] font-bold text-[18px]">Список водителей</h1>
+<form method="GET" action="{% url 'search' %}" class="w-full mt-5 mb-2">
+    <label for="site-search" class="block mb-2 text-sm font-medium text-gray-900">Поиск:</label>
+    <input type="search" id="site-search" name="q" placeholder="Поиск..." class="mb-5 w-[35%] bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5" />
+    <button type="submit" class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center">Найти</button>
+</form>
 <div class="p-2 bg-white rounded-md shadow-lg mt-[20px]">
     <table class="w-full divide-y divide-gray-200">
         <thead>
@@ -95,9 +100,8 @@
             </tr>
         </thead>
         <tbody class="divide-y divide-gray-200">
-
-            {% if drivers_list %}
-            {% for driver in drivers_list %}
+            {% if results %}
+            {% for driver in results %}
             <tr>
                 <td class="px-4 py-4 whitespace-nowrap text-sm font-medium text-blue-300 underline"><a
                         href="{% url 'driver_details' driver.driver.pk %}">{{ driver.driver }}</a></td>
@@ -118,16 +122,31 @@
             </tr>
             {% endfor %}
             {% else %}
+            {% for driver in drivers_list %}
             <tr>
-                <td class="px-4 py-4 whitespace-nowrap text-sm font-medium text-blue-300 underline">
-                    Список пуст
+                <td class="px-4 py-4 whitespace-nowrap text-sm font-medium text-blue-300 underline"><a
+                        href="{% url 'driver_details' driver.driver.pk %}">{{ driver.driver }}</a></td>
+                <td class="px-4 py-4 whitespace-nowrap text-sm font-medium text-gray-800">{{ driver.driver.first_name|truncatechars:15 }}</td>
+                <td class="px-4 py-4 whitespace-nowrap text-sm font-medium text-gray-800">
+                    {% if driver.from_city == 'NK' %}Нукус{% else %}Шымбай{% endif %} -> {% if driver.to_city == 'NK' %}Нукус{% else %}Шымбай{% endif %}
+                </td>
+                <td class="px-4 py-4 whitespace-nowrap text-sm font-medium text-gray-800">{{ driver.driver.phone_number }}</td>
+                <td class="px-4 py-4 whitespace-nowrap text-sm font-medium text-gray-800">{{ driver.joined_at|date:"d.m.Y, H:i" }}</td>
+                <td class="px-4 py-4 whitespace-nowrap text-sm font-medium text-gray-800">{{ driver.driver.balance }}
+                </td>
+                <td class="px-4 py-4 whitespace-nowrap text-sm font-medium text-gray-800">
+                    <span
+                        class="text-[10px] px-[7px] py-[2px] rounded-full {% if driver.status %}bg-green-400{% else %}bg-red-500{% endif %} text-white font-semibold">
+                        {% if driver.status %}Активный{% else %}Не активный{% endif %}
+                    </span>
                 </td>
             </tr>
+            {% endfor %}
             {% endif %}
         </tbody>
     </table>
 
-    {% if drivers_list.paginator.num_pages > 1 %}
+{% if drivers_list.paginator.num_pages > 1 %}
     <nav class="w-full" aria-label="Page navigation example">
         <ul class="flex items-center justify-center mt-4 -space-x-px h-8 text-sm">
             <!-- Кнопка "Предыдущая страница" -->
@@ -142,15 +161,54 @@
                     </svg>
                 </a>
             </li>
-            {% for page_num in drivers_list.paginator.page_range %}
+
+            <!-- Первая страница -->
+            {% if drivers_list.number != 1 %}
             <li>
-                <a href="?page={{ page_num }}"
-                    class="flex items-center justify-center px-3 h-8 leading-tight border border-gray-300 hover:bg-gray-100 hover:text-gray-700 {% if page_num == drivers_list.number %}text-blue-600 border-blue-300 bg-blue-50 hover:bg-blue-100 hover:text-blue-700{% endif %}">{{ page_num }}</a>
+                <a href="?page=1" class="flex items-center justify-center px-3 h-8 leading-tight border border-gray-300 hover:bg-gray-100 hover:text-gray-700">
+                    1
+                </a>
             </li>
+            {% endif %}
+
+            <!-- Многоточие перед текущим диапазоном страниц, если далеко от первой страницы -->
+            {% if drivers_list.number > 4 %}
+            <li>
+                <span class="flex items-center justify-center px-3 h-8 leading-tight">...</span>
+            </li>
+            {% endif %}
+
+            <!-- Страницы вокруг текущей -->
+            {% for page_num in drivers_list.paginator.page_range %}
+                {% if page_num >= drivers_list.number|add:-2 and page_num <= drivers_list.number|add:2 %}
+                    <li>
+                        <a href="?page={{ page_num }}" class="flex items-center justify-center px-3 h-8 leading-tight border border-gray-300 hover:bg-gray-100 hover:text-gray-700 {% if page_num == drivers_list.number %}text-blue-600 border-blue-300{% endif %}">
+                            {{ page_num }}
+                        </a>
+                    </li>
+                {% endif %}
             {% endfor %}
+
+            <!-- Многоточие после текущего диапазона страниц, если далеко от последней страницы -->
+            {% if drivers_list.number < drivers_list.paginator.num_pages|add:-3 %}
+            <li>
+                <span class="flex items-center justify-center px-3 h-8 leading-tight">...</span>
+            </li>
+            {% endif %}
+
+            <!-- Последняя страница -->
+            {% if drivers_list.number != drivers_list.paginator.num_pages %}
+            <li>
+                <a href="?page={{ drivers_list.paginator.num_pages }}" class="flex items-center justify-center px-3 h-8 leading-tight border border-gray-300 hover:bg-gray-100 hover:text-gray-700">
+                    {{ drivers_list.paginator.num_pages }}
+                </a>
+            </li>
+            {% endif %}
+
+            <!-- Кнопка "Следующая страница" -->
             <li>
                 <a href="{% if drivers_list.has_next %}?page={{ drivers_list.next_page_number }}{% endif %}"
-                    class="flex items-center justify-center px-3 h-8 leading-tight text-gray-500 bg-white border border-gray-300 rounded-e-lg hover:bg-gray-100 hover:text-gray-700 ">
+                    class="flex items-center justify-center px-3 h-8 leading-tight text-gray-500 bg-white border border-gray-300 rounded-e-lg hover:bg-gray-100 hover:text-gray-700">
                     <span class="sr-only">Next</span>
                     <svg class="w-2.5 h-2.5 rtl:rotate-180" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"
                         fill="none" viewBox="0 0 6 10">
@@ -161,7 +219,8 @@
             </li>
         </ul>
     </nav>
-    {% endif %}
+{% endif %}
+
 
 </div>
 

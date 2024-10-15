@@ -7,11 +7,9 @@ from django.contrib import messages
 from django.contrib.admin.views.decorators import staff_member_required
 from django.core.paginator import Paginator
 from django.db.models import Q
-from django.utils import timezone
 from decimal import Decimal
 from asgiref.sync import async_to_sync
 from channels.layers import get_channel_layer
-from datetime import datetime, timedelta
 
 from dispatcher.forms import DriverChangeForm, PricingForm, RegisterDriverForm
 from dispatcher.models import Pricing, DriverBalanceHistory
@@ -27,12 +25,9 @@ User = get_user_model()
 
 @staff_member_required(login_url='login/')
 def index(request):
-    today = timezone.now().date()
     orders_list = Order.objects.filter(in_search=True).order_by('-created_at')
     all_orders = Order.objects.count()
-    all_orders_today = Order.objects.filter(created_at__date=today).count()
     all_drivers = Line.objects.count()
-    online_drivers_count = Line.objects.filter(status=True).count()
     drivers_list_nk = Line.objects.filter(
         status=True, from_city='NK').order_by('-status', 'joined_at')
     drivers_list_sb = Line.objects.filter(
@@ -45,8 +40,6 @@ def index(request):
         'orders_list': orders_list,
         'drivers_list_nk': drivers_list_nk,
         'drivers_list_sb': drivers_list_sb,
-        'all_orders_today': all_orders_today,
-        'online_drivers_count': online_drivers_count,
     }
 
     return render(request, 'dispatcher/index.html', context)
@@ -138,6 +131,10 @@ def orders(request):
                         send_line(from_city=driver.from_city,
                                   to_city=driver.to_city)
                         send_sms.delay(
+                            phone_number=new_order.client.phone_number,
+                            message=f'NO\'KIS-SHIMBAY. Ma\'nzilden-Ma\'nzilge "Saqiy Taxi". Sizdin\' ja\'mi bonusin\'iz: {client.balance}. Tel: 55 106-48-48, 77 106-48-48'
+                        )
+                       send_sms.delay(
                             phone_number=new_order.client.phone_number,
                             message=f'NO\'KIS-SHIMBAY. Ma\'nzilden-Ma\'nzilge "Saqiy Taxi". Sizdin\' ja\'mi bonusin\'iz: {client.balance}. Tel: 55 106-48-48, 77 106-48-48'
                         )

@@ -8,6 +8,7 @@ __pycache__/
 .env
 
 *.sqlite3
+my-postgres-data/
 
 **/migrations/*
 !**/migrations/__init__.py
