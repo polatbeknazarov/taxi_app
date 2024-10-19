@@ -22,9 +22,12 @@ django-cors-headers = "^4.3.1"
 django-tailwind = "^3.8.0"
 pillow = "^10.3.0"
 twisted = {extras = ["http2", "tls"], version = "^24.3.0"}
+folium = "^0.17.0"
+geopy = "^2.4.1"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.1.1"
+black = "^24.10.0"
 
 [build-system]
 requires = ["poetry-core"]

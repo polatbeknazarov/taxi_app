@@ -3,7 +3,6 @@ from rest_framework.response import Response
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework.permissions import IsAuthenticated
 from django.contrib.auth import get_user_model
-from django.db.models import F
 
 from orders.models import Order
 from orders.serializers import OrderSerializer
@@ -21,7 +20,9 @@ class LastPassengersAPIView(APIView):
         user = request.user
         driver = Line.objects.get(driver=user)
         orders = Order.objects.filter(
-            driver=driver, updated_at__gt=driver.joined_at).order_by('-created_at', 'id',)
+            driver=driver,
+            updated_at__gt=driver.joined_at,
+        ).order_by("-created_at", "id")
         serializer = OrderSerializer(orders, many=True)
 
         return Response(serializer.data)

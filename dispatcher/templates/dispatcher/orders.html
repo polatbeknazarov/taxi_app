@@ -3,198 +3,342 @@
 {% block title %}1S. TAXI - Создание заявки{% endblock title %}
 
 {% block content %}
-<h1 class="my-[10px] font-bold text-[18px]">Создание заявки</h1>
-
-<form method="POST">
-    {% csrf_token %}
-    <div class="grid gap-6 md:grid-cols-2">
-        <div>
-            <label for="phone" class="block mb-2 text-sm font-medium text-gray-900">Номер телефона</label>
-            <input type="tel" id="phone" name="phone_number"
-                class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
-                placeholder="Введите номер телефона клиента" pattern="^\+?\d{12}$" title="Введите корректный номер телефона (например: +998933640767)" required />
-        </div>
-        <div>
-            <label for="first_name" class="block mb-2 text-sm font-medium text-gray-900">Количество пассажиров</label>
-            <select id="countries" name="passengers"
-                class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
-                <option selected>Выберите количество пассажиров</option>
-                <option value="1" selected>1</option>
-                <option value="2">2</option>
-                <option value="3">3</option>
-                <option value="4">4</option>
-            </select>
-        </div>
-        <div>
-            <label for="last_name" class="block mb-2 text-sm font-medium text-gray-900">Выберите маршрут</label>
-            <select id="countries" name="from_city"
-                class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
-                <option value="NK">Нукус</option>
-                <option value="SB">Шымбай</option>
-            </select>
-        </div>
-        <div>
-            <label for="company" class="block mb-2 text-sm font-medium text-gray-900">&nbsp;</label>
-            <select id="countries" name="to_city"
-                class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
-                <option value="NK">Нукус</option>
-                <option selected value="SB">Шымбай</option>
-            </select>
-        </div>
+<div id="modal" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 hidden">
+    <div class="bg-white rounded-lg shadow-lg p-6 w-[50%]">
+        <h2 class="text-lg font-bold mb-4">Изменение данных</h2>
+        <form method="post" action={% url "edit_order" %}>
+            {% csrf_token %}
+            <input type="hidden" name="order_id" id="order_id" value="">
+            <div class="mb-3">
+                <label for="phone" class="block mb-2 text-sm font-medium text-gray-900">Номер телефона</label>
+                <input 
+                    type="tel" 
+                    id="phone_number" 
+                    name="phone_number"
+                    class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
+                    placeholder="Введите номер телефона клиента" 
+                    autofocus
+                    value="+998"
+                    pattern="^\+?\d{12}$" 
+                    title="Введите корректный номер телефона (например: +998933640767)" 
+                    required 
+                />
+            </div>
+            <div>
+                <label for="from_city" class="block mb-2 text-sm font-medium text-gray-900">Выберите маршрут</label>
+                <select id="from_city" name="from_city"
+                    class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
+                    <option value="NK">Нукус</option>
+                    <option value="SB">Шымбай</option>
+                </select>
+            </div>
+            <div>
+                <select id="to_city" name="to_city"
+                    class="bg-gray-50 border mt-2 border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
+                    <option value="NK">Нукус</option>
+                    <option selected value="SB">Шымбай</option>
+                </select>
+            </div>
+            <div class="mt-3">
+                <label for="first_name" class="block mb-2 text-sm font-medium text-gray-900">Количество пассажиров</label>
+                <select id="passengers" name="passengers"
+                    class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
+                    <option selected>Выберите количество пассажиров</option>
+                    <option value="1" selected>1</option>
+                    <option value="2">2</option>
+                    <option value="3">3</option>
+                    <option value="4">4</option>
+                </select>
+            </div>
+            <div class="mt-3">
+                <label for="order_type" class="block mb-2 text-sm font-medium text-gray-900">Выберите тип заявки</label>
+                <select id="order_type" name="order_type"
+                    class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
+                    <option selected value="regular">Обычная</option>
+                    <option value="package">Посылка</option>
+                </select>
+            </div>
+            <div class="mt-3">
+                <label for="address" class="block mb-2 text-sm font-medium text-gray-900">Адрес</label>
+                    <textarea id="address" rows="4" name="address"
+                        class="block p-2.5 w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500"
+                        placeholder="Например: Ул. Беруний, 25/1. Ориентир: Лас-Вегас ресторан" required></textarea>
+            </div>
+            <div class="flex flex-row gap-2 justify-end">
+                <div class="mt-2">
+                    <button type="button" id="closeModal" class="bg-red-500 hover:bg-red-600 text-white focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center">Закрыть</button>
+                </div>
+                <div class="mt-2">
+                    <button type="submit" class="bg-blue-700 hover:bg-blue-800 text-white focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center">Изменить</button>
+                </div>
+            </div>
+        </form>
     </div>
-    <div class="my-[20px]">
-        <label for="company" class="block mb-2 text-sm font-medium text-gray-900">Выберите тип заявки</label>
-        <select id="countries" name="order_type"
-            class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
-            <option selected value="regular">Обычный</option>
-            <option value="package">Посылка</option>
-        </select>
-    </div>
-    <div class="mb-[20px]">
-
-        <label for="message" class="block mb-2 text-sm font-medium text-gray-900">Адрес</label>
-        <textarea id="message" rows="4" name="address"
-            class="block p-2.5 w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500"
-            placeholder="Например: Ул. Беруний, 25/1. Ориентир: Лас-Вегас ресторан" required></textarea>
-
-    </div>
-    <button type="submit"
-        class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center">Сохранить</button>
-</form>
-
-<h1 class="mt-[20px] mb-[10px] font-bold text-[18px]">Список заявок</h1>
-<div class="p-2 bg-white rounded-md shadow-lg mb-[20px]">
-    <table class="table-auto w-full divide-y divide-gray-200">
-        <thead>
-            <tr>
-                <th scope="col" class="px-4 py-3 text-start text-xs font-medium uppercase text-gray-500">Номер телефона
-                </th>
-                <th scope="col" class="px-4 py-3 text-start text-xs font-medium uppercase text-gray-500">Пассажиров
-                </th>
-                <th scope="col" class="px-4 py-3 text-start text-xs font-medium uppercase text-gray-500">
-                    Маршрут
-                </th>
-                <th scope="col" class="px-4 py-3 text-start text-xs font-medium uppercase text-gray-500">
-                    Дата</th>
-                <th scope="col" class="px-4 py-3 text-start text-xs font-medium uppercase text-gray-500">Статус</th>
-                <th scope="col" class="px-4 py-3 text-start text-xs font-medium uppercase text-gray-500">Водитель</th>
-                <th scope="col" class="px-4 py-3 text-start text-xs font-medium uppercase text-gray-500">Бонус</th>
-                <th scope="col" class="px-4 py-3 text-start text-xs font-medium uppercase text-gray-500">Действие</th>
-            </tr>
-        </thead>
-        <tbody class="divide-y divide-gray-200">
-
-            {% if orders_list %}
-            {% for order in orders_list %}
-            <tr>
-                <td class="px-4 py-4 whitespace-nowrap text-sm font-medium text-gray-800">
-                    <a href="{% url "order_details" order.pk %}" class="whitespace-nowrap text-sm font-medium text-blue-300 underline">{{ order.client}}</a>
-                </td>
-                <td class="px-4 py-4 whitespace-nowrap text-sm font-medium text-gray-800">{{ order.passengers }}</td>
-                <td class="px-4 py-4 whitespace-nowrap text-sm font-medium text-gray-800">{% if order.from_city == 'NK' %}Нукус{% else %}Шымбай{% endif %} -> {% if order.to_city == 'NK' %}Нукус{% else %}Шымбай{% endif %}</td>
-                <td class="px-4 py-4 whitespace-nowrap text-sm font-medium text-gray-800">{{ order.created_at|date:"d.m.Y, H:i" }}</td>
-                <td class="px-4 py-4 whitespace-nowrap text-sm font-medium text-gray-800">
-                    <span class="text-[10px] px-[7px] py-[2px] rounded-full {% if order.in_search %}bg-red-400{% else %}bg-green-400{% endif %} text-white font-semibold">
-                        {% if order.in_search %}Идет поиск водителя{% else %}Водитель найден{% endif %}
-                    </span>
-                </td>
-                <td class="px-4 py-4 whitespace-nowrap text-sm font-medium text-gray-800">
-                    {% if order.driver %}
-                        <a href="{% url "driver_details" order.driver.pk %}" class="whitespace-nowrap text-sm font-medium text-blue-300 underline">{{ order.driver }}</a>
-                    {% else %}
-                        Не найден
-                    {% endif %}
-                </td>
-                <td class="px-4 py-4 whitespace-nowrap text-sm font-medium text-gray-800">{{ order.client.balance }}</td>
-                <td class="px-4 py-4 whitespace-nowrap text-sm font-medium text-red-500">
-                    <a href="{% url "cancel_order" order.pk %}">Отменить</a>
-                </td>
-            </tr>
-            {% endfor %}
-            {% else %}
-            <tr>
-                <td class="px-4 py-4 whitespace-nowrap text-sm font-medium text-gray-800">Список пуст</td>
-            </tr>
-            {% endif %}
-        </tbody>
-    </table>
-
-{% if orders_list.paginator.num_pages > 1 %}
-    <nav class="w-full" aria-label="Page navigation example">
-        <ul class="flex items-center justify-center mt-4 -space-x-px h-8 text-sm">
-            <!-- Кнопка "Предыдущая страница" -->
-            <li>
-                <a href="{% if orders_list.has_previous %}?page={{ orders_list.previous_page_number }}{% endif %}"
-                    class="flex items-center justify-center px-3 h-8 ms-0 leading-tight text-gray-500 bg-white border border-e-0 border-gray-300 rounded-s-lg hover:bg-gray-100 hover:text-gray-700">
-                    <span class="sr-only">Previous</span>
-                    <svg class="w-2.5 h-2.5 rtl:rotate-180" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"
-                        fill="none" viewBox="0 0 6 10">
-                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M5 1 1 5l4 4" />
-                    </svg>
-                </a>
-            </li>
-
-            <!-- Первая страница (отображается, если текущая страница не первая) -->
-            {% if orders_list.number != 1 %}
-            <li>
-                <a href="?page=1" class="flex items-center justify-center px-3 h-8 leading-tight border border-gray-300 hover:bg-gray-100 hover:text-gray-700">
-                    1
-                </a>
-            </li>
-            {% endif %}
-
-            <!-- Многоточие перед текущим диапазоном страниц, если далеко от первой страницы -->
-            {% if orders_list.number > 4 %}
-            <li>
-                <span class="flex items-center justify-center px-3 h-8 leading-tight">...</span>
-            </li>
-            {% endif %}
-
-            <!-- Страницы вокруг текущей -->
-            {% for page_num in orders_list.paginator.page_range %}
-                {% if page_num >= orders_list.number|add:-2 and page_num <= orders_list.number|add:2 %}
-                    <li>
-                        <a href="?page={{ page_num }}" class="flex items-center justify-center px-3 h-8 leading-tight border border-gray-300 hover:bg-gray-100 hover:text-gray-700 {% if page_num == orders_list.number %}text-blue-600 border-blue-300{% endif %}">
-                            {{ page_num }}
-                        </a>
-                    </li>
-                {% endif %}
-            {% endfor %}
-
-            <!-- Многоточие после текущего диапазона страниц, если далеко от последней страницы -->
-            {% if orders_list.number < orders_list.paginator.num_pages|add:-3 %}
-            <li>
-                <span class="flex items-center justify-center px-3 h-8 leading-tight">...</span>
-            </li>
-            {% endif %}
-
-            <!-- Последняя страница (отображается, если текущая страница не последняя) -->
-            {% if orders_list.number != orders_list.paginator.num_pages %}
-            <li>
-                <a href="?page={{ orders_list.paginator.num_pages }}" class="flex items-center justify-center px-3 h-8 leading-tight border border-gray-300 hover:bg-gray-100 hover:text-gray-700">
-                    {{ orders_list.paginator.num_pages }}
-                </a>
-            </li>
-            {% endif %}
-
-            <!-- Кнопка "Следующая страница" -->
-            <li>
-                <a href="{% if orders_list.has_next %}?page={{ orders_list.next_page_number }}{% endif %}"
-                    class="flex items-center justify-center px-3 h-8 leading-tight text-gray-500 bg-white border border-gray-300 rounded-e-lg hover:bg-gray-100 hover:text-gray-700">
-                    <span class="sr-only">Next</span>
-                    <svg class="w-2.5 h-2.5 rtl:rotate-180" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"
-                        fill="none" viewBox="0 0 6 10">
-                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="m1 9 4-4-4-4" />
-                    </svg>
-                </a>
-            </li>
-        </ul>
-    </nav>
-{% endif %}
-
-
 </div>
+<div class="p-3 px-7 bg-white">
+    <h1 class="my-[10px] font-bold text-[18px]">Создание заявки</h1>
 
+    <form method="POST">
+        {% csrf_token %}
+        <div class="grid gap-6 md:grid-cols-2">
+            <div>
+                <label for="phone" class="block mb-2 text-sm font-medium text-gray-900">Номер телефона</label>
+                <input 
+                    type="tel" 
+                    id="phone" 
+                    name="phone_number"
+                    class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
+                    placeholder="Введите номер телефона клиента" 
+                    autofocus
+                    value="+998"
+                    pattern="^\+?\d{12}$" 
+                    title="Введите корректный номер телефона (например: +998933640767)" 
+                    required
+                />
+            </div>
+            <div>
+                <label for="first_name" class="block mb-2 text-sm font-medium text-gray-900">Количество пассажиров</label>
+                <select id="countries" name="passengers"
+                    class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
+                    <option selected>Выберите количество пассажиров</option>
+                    <option value="1" selected>1</option>
+                    <option value="2">2</option>
+                    <option value="3">3</option>
+                    <option value="4">4</option>
+                </select>
+            </div>
+            <div>
+                <label for="last_name" class="block mb-2 text-sm font-medium text-gray-900">Выберите маршрут</label>
+                <select id="countries" name="from_city"
+                    class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
+                    <option value="NK">Нукус</option>
+                    <option value="SB">Шымбай</option>
+                </select>
+            </div>
+            <div>
+                <label for="company" class="block mb-2 text-sm font-medium text-gray-900">&nbsp;</label>
+                <select id="countries" name="to_city"
+                    class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
+                    <option value="NK">Нукус</option>
+                    <option selected value="SB">Шымбай</option>
+                </select>
+            </div>
+        </div>
+        <div class="my-[20px]">
+            <label for="company" class="block mb-2 text-sm font-medium text-gray-900">Выберите тип заявки</label>
+            <select id="countries" name="order_type"
+                class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
+                <option selected value="regular">Обычный</option>
+                <option value="package">Посылка</option>
+            </select>
+        </div>
+        <div class="mb-[20px]">
+
+            <label for="message" class="block mb-2 text-sm font-medium text-gray-900">Адрес</label>
+            <textarea id="message" rows="4" name="address"
+                class="block p-2.5 w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500"
+                placeholder="Например: Ул. Беруний, 25/1. Ориентир: Лас-Вегас ресторан" required></textarea>
+
+        </div>
+        <button type="submit"
+            class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center">Сохранить</button>
+    </form>
+
+    <h1 class="mt-[20px] mb-[10px] font-bold text-[18px]">Список заявок</h1>
+    <div class="p-2 bg-white rounded-md shadow-lg mb-[20px]">
+        <table class="table-auto w-full divide-y divide-gray-200">
+            <thead>
+                <tr>
+                    <th scope="col" class="px-4 py-3 text-start text-xs font-medium uppercase text-gray-500">Номер телефона
+                    </th>
+                    <th scope="col" class="px-4 py-3 text-start text-xs font-medium uppercase text-gray-500">Пассажиров
+                    </th>
+                    <th scope="col" class="px-4 py-3 text-start text-xs font-medium uppercase text-gray-500">
+                        Маршрут
+                    </th>
+                    <th scope="col" class="px-4 py-3 text-start text-xs font-medium uppercase text-gray-500">
+                        Дата</th>
+                    <th scope="col" class="px-4 py-3 text-start text-xs font-medium uppercase text-gray-500">Статус</th>
+                    <th scope="col" class="px-4 py-3 text-start text-xs font-medium uppercase text-gray-500">Водитель</th>
+                    <th scope="col" class="px-4 py-3 text-start text-xs font-medium uppercase text-gray-500">Бонус</th>
+                    <th scope="col" class="px-4 py-3 text-start text-xs font-medium uppercase text-gray-500">Действие</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-200">
+
+                {% if orders_list %}
+                {% for order in orders_list %}
+                <tr>
+                    <td class="px-4 py-4 whitespace-nowrap text-sm font-medium text-gray-800">
+                        <a href="{% url "order_details" order.pk %}" class="whitespace-nowrap text-sm font-medium text-blue-300 underline">{{ order.client}}</a>
+                    </td>
+                    <td class="px-4 py-4 whitespace-nowrap text-sm font-medium text-gray-800">{{ order.passengers }}</td>
+                    <td class="px-4 py-4 whitespace-nowrap text-sm font-medium text-gray-800">{% if order.from_city == 'NK' %}Нукус{% else %}Шымбай{% endif %} -> {% if order.to_city == 'NK' %}Нукус{% else %}Шымбай{% endif %}</td>
+                    <td class="px-4 py-4 whitespace-nowrap text-sm font-medium text-gray-800">{{ order.created_at|date:"d.m.Y, H:i" }}</td>
+                    <td class="px-4 py-4 whitespace-nowrap text-sm font-medium text-gray-800">
+                        <span class="text-[10px] px-[7px] py-[2px] rounded-full {% if order.in_search %}bg-red-400{% else %}bg-green-400{% endif %} text-white font-semibold">
+                            {% if order.in_search %}Идет поиск водителя{% else %}Водитель найден{% endif %}
+                        </span>
+                    </td>
+                    <td class="px-4 py-4 whitespace-nowrap text-sm font-medium text-gray-800">
+                        {% if order.driver %}
+                            <a href="{% url "driver_details" order.driver.pk %}" class="whitespace-nowrap text-sm font-medium text-blue-300 underline">{{ order.driver }}</a>
+                        {% else %}
+                            Не найден
+                        {% endif %}
+                    </td>
+                    <td class="px-4 py-4 whitespace-nowrap text-sm font-medium text-gray-800">{{ order.client.balance }}</td>
+                    <td class="px-4 py-4 whitespace-nowrap text-sm font-medium text-red-400">
+                        <button 
+                            type="button" 
+                            class="openModalButton text-blue-400 font-medium rounded-lg text-sm w-full sm:w-auto"
+                            data-phone="{{ order.client }}"
+                            data-from-city="{{ order.from_city }}"
+                            data-to-city="{{ order.to_city }}"
+                            data-passengers="{{ order.passengers }}"
+                            data-order-type="{{ order.order_type }}"
+                            data-address="{{ order.address }}"
+                            data-order-id="{{ order.pk }}"
+                        >
+                            Изменить
+                        </button>
+                        <p href="#" 
+                            id="deleteOrderLink"
+                            class="text-red-400 font-medium rounded-lg text-sm w-full sm:w-auto"
+                            onclick="return confirm('Вы уверены, что хотите удалить эту заявку?');"
+                        >
+                            <a href="{% url "order_delete" order.pk %}">Удалить</a>
+                        </p>
+                    </td>
+                </tr>
+                {% endfor %}
+                {% else %}
+                <tr>
+                    <td class="px-4 py-4 whitespace-nowrap text-sm font-medium text-gray-800">Список пуст</td>
+                </tr>
+                {% endif %}
+            </tbody>
+        </table>
+
+    {% if orders_list.paginator.num_pages > 1 %}
+        <nav class="w-full" aria-label="Page navigation example">
+            <ul class="flex items-center justify-center mt-4 -space-x-px h-8 text-sm">
+                <!-- Кнопка "Предыдущая страница" -->
+                <li>
+                    <a href="{% if orders_list.has_previous %}?page={{ orders_list.previous_page_number }}{% endif %}"
+                        class="flex items-center justify-center px-3 h-8 ms-0 leading-tight text-gray-500 bg-white border border-e-0 border-gray-300 rounded-s-lg hover:bg-gray-100 hover:text-gray-700">
+                        <span class="sr-only">Previous</span>
+                        <svg class="w-2.5 h-2.5 rtl:rotate-180" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"
+                            fill="none" viewBox="0 0 6 10">
+                            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M5 1 1 5l4 4" />
+                        </svg>
+                    </a>
+                </li>
+
+                <!-- Первая страница (отображается, если текущая страница не первая) -->
+                {% if orders_list.number != 1 %}
+                <li>
+                    <a href="?page=1" class="flex items-center justify-center px-3 h-8 leading-tight border border-gray-300 hover:bg-gray-100 hover:text-gray-700">
+                        1
+                    </a>
+                </li>
+                {% endif %}
+
+                <!-- Многоточие перед текущим диапазоном страниц, если далеко от первой страницы -->
+                {% if orders_list.number > 4 %}
+                <li>
+                    <span class="flex items-center justify-center px-3 h-8 leading-tight">...</span>
+                </li>
+                {% endif %}
+
+                <!-- Страницы вокруг текущей -->
+                {% for page_num in orders_list.paginator.page_range %}
+                    {% if page_num >= orders_list.number|add:-2 and page_num <= orders_list.number|add:2 %}
+                        <li>
+                            <a href="?page={{ page_num }}" class="flex items-center justify-center px-3 h-8 leading-tight border border-gray-300 hover:bg-gray-100 hover:text-gray-700 {% if page_num == orders_list.number %}text-blue-600 border-blue-300{% endif %}">
+                                {{ page_num }}
+                            </a>
+                        </li>
+                    {% endif %}
+                {% endfor %}
+
+                <!-- Многоточие после текущего диапазона страниц, если далеко от последней страницы -->
+                {% if orders_list.number < orders_list.paginator.num_pages|add:-3 %}
+                <li>
+                    <span class="flex items-center justify-center px-3 h-8 leading-tight">...</span>
+                </li>
+                {% endif %}
+
+                <!-- Последняя страница (отображается, если текущая страница не последняя) -->
+                {% if orders_list.number != orders_list.paginator.num_pages %}
+                <li>
+                    <a href="?page={{ orders_list.paginator.num_pages }}" class="flex items-center justify-center px-3 h-8 leading-tight border border-gray-300 hover:bg-gray-100 hover:text-gray-700">
+                        {{ orders_list.paginator.num_pages }}
+                    </a>
+                </li>
+                {% endif %}
+
+                <!-- Кнопка "Следующая страница" -->
+                <li>
+                    <a href="{% if orders_list.has_next %}?page={{ orders_list.next_page_number }}{% endif %}"
+                        class="flex items-center justify-center px-3 h-8 leading-tight text-gray-500 bg-white border border-gray-300 rounded-e-lg hover:bg-gray-100 hover:text-gray-700">
+                        <span class="sr-only">Next</span>
+                        <svg class="w-2.5 h-2.5 rtl:rotate-180" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"
+                            fill="none" viewBox="0 0 6 10">
+                            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="m1 9 4-4-4-4" />
+                        </svg>
+                    </a>
+                </li>
+            </ul>
+        </nav>
+    {% endif %}
+
+
+    </div>
+</div>
+{% endblock %}
+
+{% block script %}
+<script>
+    const phoneInput = document.getElementById('phone');
+
+    function setCursorToEnd(input) {
+        const len = input.value.length;
+        input.setSelectionRange(len, len);
+    }
+
+    window.onload = () => setCursorToEnd(phoneInput);
+
+    const modal = document.getElementById('modal');
+    const closeModalButton = document.getElementById('closeModal');
+
+    closeModalButton.addEventListener('click', () => {
+        modal.classList.add('hidden');
+    });
+
+    document.querySelectorAll('.openModalButton').forEach(button => {
+        button.addEventListener('click', () => {
+            const phone = button.getAttribute('data-phone');
+            const fromCity = button.getAttribute('data-from-city');
+            const toCity = button.getAttribute('data-to-city');
+            const passengers = button.getAttribute('data-passengers');
+            const order_type = button.getAttribute('data-order-type');
+            const address = button.getAttribute('data-address');
+            const orderId = button.getAttribute('data-order-id');
+            
+            document.getElementById('phone_number').value = phone;
+            document.getElementById('from_city').value = fromCity;
+            document.getElementById('to_city').value = toCity;
+            document.getElementById('passengers').value = passengers;
+            document.getElementById('order_type').value = order_type;
+            document.getElementById('address').value = address;
+            document.getElementById('order_id').value = orderId;
+            document.getElementById('deleteOrderLink').href = `/orders/delete/${orderId}/`;
+            
+            modal.classList.remove('hidden');
+        });
+    });
+</script>
 {% endblock %}

@@ -21,7 +21,7 @@ def send_line(from_city, to_city):
         async_to_sync(channel_layer.group_send)(
             driver.driver.username,
             {
-                'type': 'send_message',
-                'message': json.dumps({'line': data.data}),
-            }
+                "type": "send_message",
+                "message": json.dumps({"line": data.data}),
+            },
         )

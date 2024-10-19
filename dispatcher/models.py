@@ -26,21 +26,20 @@ class Pricing(models.Model):
             return cls.objects.create()
 
     def __str__(self) -> str:
-        return f'Order fee: {self.order_fee}. Ordes bonus: {self.order_bonus}'
+        return f"Order fee: {self.order_fee}. Ordes bonus: {self.order_bonus}"
 
 
 class DriverBalanceHistory(models.Model):
     TYPE_CHOICES = [
-        ('+', 'Plus'),
-        ('-', 'Minus'),
+        ("+", "Plus"),
+        ("-", "Minus"),
     ]
 
     driver = models.ForeignKey(User, on_delete=models.CASCADE)
     amount = models.DecimalField(max_digits=9, decimal_places=2, default=0)
-    transaction = models.CharField(
-        max_length=2, choices=TYPE_CHOICES, blank=False)
+    transaction = models.CharField(max_length=2, choices=TYPE_CHOICES, blank=False)
     created_at = models.DateTimeField(auto_now=True)
 
     class Meta:
-        verbose_name = 'Balance History'
-        verbose_name_plural = 'Balance Histories'
+        verbose_name = "Balance History"
+        verbose_name_plural = "Balance Histories"

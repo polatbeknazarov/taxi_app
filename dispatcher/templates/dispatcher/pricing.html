@@ -3,39 +3,39 @@
 {% block title %}1S. TAXI - Pricing{% endblock title %}
 
 {% block content %}
-<h1 class="my-[10px] font-bold text-[18px]">Изменение тарифа</h1>
+<div class="p-3 px-7 bg-white">
+    <h1 class="my-[10px] font-bold text-[18px]">Изменение тарифа</h1>
 
-<ul>
-    <li>Плата за одну заявку: {{ pricing.order_fee }}</li>
-    <li>Бонус клиенту за одну заявку: {{ pricing.order_bonus }}</li>
-</ul>
-
-<form method="post">
-    {% csrf_token %}
-    <div class="flex flex-col mt-[20px] gap-[10px]">
-        <label for="id_order_fee" class="block text-sm font-medium text-gray-900">Плата за одну заявку</label>
-        <input type="number" value="{{ form.order_fee.value }}" id="id_order_fee" name="order_fee"
-            class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
-            placeholder="Введите плату за одну заявку" />
-        <label for="id_order_bonus" class="block text-sm font-medium text-gray-900">Бонус клиенту за одну заявку</label>
-        <input type="number" value="{{ form.order_bonus.value }}" id="id_order_bonus" name="order_bonus"
-            class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
-            placeholder="Введите плату за одну заявку" />
-    </div>
-    <button type="submit"
-        class="text-white mt-[20px] bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center">Сохранить</button>
-
-    {% if form.errors %}
-    <ul class="mt-[10px]">
-        {% for field in form %}
-        {% for error in field.errors %}
-        <li class="text-sm text-red-500">{{ error }}</li>
-        {% endfor %}
-        {% endfor %}
+    <ul>
+        <li>Плата за одну заявку: {{ pricing.order_fee }}</li>
+        <li>Бонус клиенту за одну заявку: {{ pricing.order_bonus }}</li>
     </ul>
-    {% endif %}
-</form>
 
+    <form method="post">
+        {% csrf_token %}
+        <div class="flex flex-col mt-[20px] gap-[10px]">
+            <label for="id_order_fee" class="block text-sm font-medium text-gray-900">Плата за одну заявку</label>
+            <input type="number" value="{{ form.order_fee.value }}" id="id_order_fee" name="order_fee"
+                class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
+                placeholder="Введите плату за одну заявку" />
+            <label for="id_order_bonus" class="block text-sm font-medium text-gray-900">Бонус клиенту за одну заявку</label>
+            <input type="number" value="{{ form.order_bonus.value }}" id="id_order_bonus" name="order_bonus"
+                class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
+                placeholder="Введите плату за одну заявку" />
+        </div>
+        <button type="submit"
+            class="text-white mt-[20px] bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center">Сохранить</button>
 
+        {% if form.errors %}
+        <ul class="mt-[10px]">
+            {% for field in form %}
+            {% for error in field.errors %}
+            <li class="text-sm text-red-500">{{ error }}</li>
+            {% endfor %}
+            {% endfor %}
+        </ul>
+        {% endif %}
+    </form>
 
+</div>
 {% endblock content %}

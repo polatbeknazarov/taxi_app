@@ -7,6 +7,7 @@
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<meta http-equiv="X-UA-Compatible" content="ie=edge">
+	<script src="https://api-maps.yandex.ru/2.1/?lang=ru_RU" type="text/javascript"></script>
 	{% tailwind_css %}
 </head>
 
@@ -72,9 +73,19 @@
 							<span class="mx-4 font-medium">Тариф</span>
 						</a>
 
+						<a class="flex items-center px-4 py-2 {% if request.path == '/map/' %}rounded-md bg-gray-800 text-gray-200{% else %}transition-colors duration-300 transform rounded-md text-gray-400  hover:bg-gray-800 hover:text-gray-200{% endif %}"
+							href="{% url "map" %}">
+							<svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+								<path d="M12 22s-8-4.5-8-11.8A8 8 0 0 1 12 2a8 8 0 0 1 8 8.2c0 7.3-8 11.8-8 11.8z"/>
+								<circle cx="12" cy="10" r="3"/>
+							</svg>
+
+							<span class="mx-4 font-medium">Карта</span>
+						</a>
+
 						<a class="flex items-center px-4 py-2 {% if request.path == '/history/' %}rounded-md bg-gray-800 text-gray-200{% else %}transition-colors duration-300 transform rounded-md text-gray-400  hover:bg-gray-800 hover:text-gray-200{% endif %}"
 							href="{% url "history" %}">
-							<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+							<svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
 								<circle cx="12" cy="12" r="10"></circle>
 								<polyline points="12 6 12 12 16 14"></polyline>
 							</svg>
@@ -84,7 +95,7 @@
 
 						<hr class="my-6 border-gray-200 dark:border-gray-600" />
 
-						<a class="flex items-center px-4 py-2 text-gray-600 transition-colors duration-300 transform rounded-md dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 dark:hover:text-gray-200 hover:text-gray-700"
+						<a class="flex items-center px-4 py-2 transition-colors duration-300 transform rounded-md text-gray-400  hover:bg-gray-800 hover:text-gray-200"
 							href="{% url "logout" %}">
 							<svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" width="24" height="24"
 								viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
@@ -110,11 +121,13 @@
 				</div>
 			</aside>
 
-			<div class="p-3 px-7" style="width: calc(100% - 256px);">
+			<div style="width: calc(100% - 256px);">
 				{% if messages %}
 					{% for message in messages %}
-					<div class="p-4 mb-4 text-sm rounded-lg bg-gray-900 {% if message.tags == 'success' %}text-green-400{% else %}text-red-400{% endif %}" role="alert">
-						<span class="font-medium">{{ message }}</span>
+					<div class="pt-2 px-7 bg-white">
+						<div class="p-4 mb-4 text-sm rounded-lg bg-gray-900 {% if message.tags == 'success' %}text-green-400{% else %}text-red-400{% endif %}" role="alert">
+							<span class="font-medium">{{ message }}</span>
+						</div>
 					</div>
 					{% endfor %}
 				{% endif %}

@@ -16,8 +16,7 @@ from orders.utils import SendSmsWithEskizApi
 @app.task
 def send_order(order_id, from_city, to_city):
     pricing = Pricing.get_singleton()
-    lines = Line.objects.filter(
-        status=True, from_city=from_city, to_city=to_city)
+    lines = Line.objects.filter(status=True, from_city=from_city, to_city=to_city)
     order = Order.objects.get(id=order_id)
     order_passengers = order.passengers
     data = OrderSerializer(order).data
@@ -35,9 +34,9 @@ def send_order(order_id, from_city, to_city):
             async_to_sync(channel_layer.group_send)(
                 line.driver.username,
                 {
-                    'type': 'send_message',
-                    'message': json.dumps({'order': data}),
-                }
+                    "type": "send_message",
+                    "message": json.dumps({"order": data}),
+                },
             )
 
             time.sleep(15)
@@ -47,9 +46,9 @@ def send_order(order_id, from_city, to_city):
                 async_to_sync(channel_layer.group_send)(
                     line.driver.username,
                     {
-                        'type': 'send_message',
-                        'message': json.dumps({'type': 'canceled'}),
-                    }
+                        "type": "send_message",
+                        "message": json.dumps({"type": "canceled"}),
+                    },
                 )
 
     if order.in_search:
@@ -62,14 +61,15 @@ def send_order(order_id, from_city, to_city):
             async_to_sync(channel_layer.group_send)(
                 line.driver.username,
                 {
-                    'type': 'send_message',
-                    'message': json.dumps({'free_orders': free_orders_data.data})
-                }
+                    "type": "send_message",
+                    "message": json.dumps({"free_orders": free_orders_data.data}),
+                },
             )
 
 
 @app.task
 def send_sms(phone_number, message):
     eskiz_api = SendSmsWithEskizApi(
-        message=message, phone=phone_number.replace('+', ''))
+        message=message, phone=phone_number.replace("+", "")
+    )
     eskiz_api.send_message()

@@ -6,9 +6,9 @@ from orders.models import Order, OrdersHistory, Client
 @admin.register(Client)
 class ClientAdmin(admin.ModelAdmin):
     list_display = (
-        'id',
-        'phone_number',
-        'balance',
+        "id",
+        "phone_number",
+        "balance",
     )
     list_per_page = 30
 
@@ -16,22 +16,22 @@ class ClientAdmin(admin.ModelAdmin):
 @admin.register(Order)
 class OrderAdmin(admin.ModelAdmin):
     list_display = (
-        'id',
-        'client',
-        'driver',
-        'from_city',
-        'to_city',
-        'address',
-        'created_at',
-        'updated_at',
+        "id",
+        "client",
+        "driver",
+        "from_city",
+        "to_city",
+        "address",
+        "created_at",
+        "updated_at",
     )
     list_editable = (
-        'from_city',
-        'to_city',
+        "from_city",
+        "to_city",
     )
     search_fields = (
-        'client',
-        'address',
+        "client",
+        "address",
     )
     list_per_page = 30
 
@@ -39,7 +39,7 @@ class OrderAdmin(admin.ModelAdmin):
 @admin.register(OrdersHistory)
 class OrdersHistoryAdmin(admin.ModelAdmin):
     list_display = (
-        'id',
-        'driver',
+        "id",
+        "driver",
     )
     list_per_page = 30

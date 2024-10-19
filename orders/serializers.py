@@ -7,9 +7,9 @@ class ClientSerializer(serializers.ModelSerializer):
     class Meta:
         model = Client
         fields = (
-            'id',
-            'phone_number',
-            'balance',
+            "id",
+            "phone_number",
+            "balance",
         )
 
 
@@ -19,19 +19,19 @@ class OrderSerializer(serializers.ModelSerializer):
     class Meta:
         model = Order
         fields = (
-            'id',
-            'client',
-            'order_type',
-            'from_city',
-            'to_city',
-            'address',
-            'passengers',
-            'created_at',
+            "id",
+            "client",
+            "order_type",
+            "from_city",
+            "to_city",
+            "address",
+            "passengers",
+            "created_at",
         )
 
     def create(self, validated_data):
-        client_data = validated_data.pop('client')
-        phone_number = client_data.get('phone_number')
+        client_data = validated_data.pop("client")
+        phone_number = client_data.get("phone_number")
 
         client, created = Client.objects.get_or_create(
             phone_number=phone_number,
@@ -48,7 +48,7 @@ class OrdersHistorySerializer(serializers.ModelSerializer):
     class Meta:
         model = OrdersHistory
         fields = (
-            'id',
-            'driver',
-            'order',
+            "id",
+            "driver",
+            "order",
         )

@@ -13,18 +13,18 @@ class LineSerializer(serializers.ModelSerializer):
     class Meta:
         model = Line
         fields = (
-            'id',
-            'username',
-            'first_name',
-            'last_name',
-            'car_number',
-            'car_brand',
-            'passengers',
-            'passengers_required',
-            'from_city',
-            'to_city',
-            'status',
-            'joined_at',
+            "id",
+            "username",
+            "first_name",
+            "last_name",
+            "car_number",
+            "car_brand",
+            "passengers",
+            "passengers_required",
+            "from_city",
+            "to_city",
+            "status",
+            "joined_at",
         )
 
     def get_first_name(self, obj):

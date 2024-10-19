@@ -29,18 +29,19 @@ class JwtAuthMiddleware(BaseMiddleware):
         self.inner = inner
 
     async def __call__(self, scope, receive, send):
-        headers = dict(scope['headers'])
+        headers = dict(scope["headers"])
 
-        if b'authorization' in headers:
-            token_name, token_key = headers[b'authorization'].decode().split()
+        if b"authorization" in headers:
+            token_name, token_key = headers[b"authorization"].decode().split()
 
-            if token_name == 'Bearer':
+            if token_name == "Bearer":
                 try:
                     decoded_data = jwt_decode(
-                        token_key, settings.SECRET_KEY, algorithms=['HS256'])
-                    scope['user'] = await get_user(validated_token=decoded_data)
+                        token_key, settings.SECRET_KEY, algorithms=["HS256"]
+                    )
+                    scope["user"] = await get_user(validated_token=decoded_data)
                 except ExpiredSignatureError:
-                    await send({'type': 'websocket.close', 'code': 403})
+                    await send({"type": "websocket.close", "code": 403})
                 except Exception as e:
                     print(e)
 
